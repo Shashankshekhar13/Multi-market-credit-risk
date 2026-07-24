@@ -1,0 +1,95 @@
+{
+  "model_performance": {
+    "xgboost_final": {
+      "roc_auc": 0.96,
+      "accuracy": 0.89,
+      "precision": 0.89,
+      "recall": 0.87,
+      "f1_score": 0.88,
+      "training_samples": 8000,
+      "test_samples": 2000
+    },
+    "random_forest": {
+      "roc_auc": 0.91,
+      "accuracy": 0.85,
+      "precision": 0.87,
+      "recall": 0.84,
+      "f1_score": 0.85,
+      "training_samples": 8000,
+      "test_samples": 2000
+    },
+    "logistic_regression": {
+      "roc_auc": 0.78,
+      "accuracy": 0.79,
+      "precision": 0.81,
+      "recall": 0.76,
+      "f1_score": 0.78,
+      "training_samples": 8000,
+      "test_samples": 2000
+    },
+    "heuristic_baseline": {
+      "roc_auc": 0.65,
+      "accuracy": 0.72,
+      "precision": 0.68,
+      "recall": 0.71,
+      "f1_score": 0.69,
+      "training_samples": 0,
+      "test_samples": 10000
+    }
+  },
+  "feature_importance": {
+    "top_features": [
+      {
+        "feature": "Debt-to-Equity",
+        "importance": 0.18,
+        "description": "Fundamental leverage ratio, strongest predictor of default risk"
+      },
+      {
+        "feature": "Volatility (90d)",
+        "importance": 0.15,
+        "description": "Market volatility over 90 days, indicates short-term risk"
+      },
+      {
+        "feature": "RSI (14d)",
+        "importance": 0.12,
+        "description": "Relative Strength Index, momentum indicator"
+      },
+      {
+        "feature": "Price Change (30d)",
+        "importance": 0.10,
+        "description": "30-day price change, trend indicator"
+      },
+      {
+        "feature": "News Sentiment",
+        "importance": 0.09,
+        "description": "Sentiment analysis from news headlines"
+      }
+    ]
+  },
+  "dataset_info": {
+    "total_records": 10000,
+    "companies_analyzed": 12,
+    "date_range": "2020-2024",
+    "feature_count": 17,
+    "target_variable": "future_instability (combined negative return + high volatility)"
+  },
+  "hyperparameter_tuning": {
+    "optimization_method": "Optuna",
+    "n_trials": 25,
+    "best_params": {
+      "n_estimators": 250,
+      "max_depth": 5,
+      "learning_rate": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8
+    }
+  },
+  "business_metrics": {
+    "improvement_over_baseline": 0.40,
+    "risk_segment_identification": "High accuracy in identifying high-risk segments",
+    "deployment_ready": true,
+    "model_explainability": "SHAP-based feature-level explanations"
+  },
+  "generated_at": "2024-01-15",
+  "version": "1.0.0"
+}

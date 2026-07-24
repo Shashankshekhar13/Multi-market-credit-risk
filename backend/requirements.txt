@@ -1,0 +1,54 @@
+# ──────────────────────────────────────
+# CredLens v2.0 — Backend Dependencies
+# ──────────────────────────────────────
+
+# --- Core Framework ---
+fastapi==0.116.1
+uvicorn==0.35.0
+starlette==0.47.2
+pydantic==2.11.7
+pydantic_core==2.33.2
+python-dotenv==1.1.1
+python-multipart==0.0.9
+
+# --- Database ---
+SQLAlchemy[asyncio]==2.0.43
+asyncpg==0.30.0
+alembic==1.14.0
+greenlet==3.2.4
+
+# --- Caching ---
+redis==5.2.0
+
+# --- ETL / Orchestration ---
+prefect==3.0.0
+
+# --- ML / Data Science ---
+xgboost==3.0.4
+scikit-learn==1.7.1
+shap==0.48.0
+optuna
+numpy==2.2.6
+pandas==2.3.1
+scipy==1.16.1
+joblib==1.5.1
+
+# --- MLOps (Phase 2) ---
+mlflow==2.18.0
+
+# --- Auth (Phase 2) ---
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# --- Data Sources ---
+yfinance==0.2.65
+newsapi-python==0.2.7
+fredapi==0.5.2
+
+# --- NLP ---
+nltk==3.9.1
+
+# --- Utilities ---
+requests==2.32.4
+python-dateutil==2.9.0.post0
+plotly==6.3.0
