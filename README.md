@@ -1,4 +1,4 @@
-# CredLens v2.0 — Multi-Market Credit Risk Platform
+# CredLens — Multi-Market Credit Risk Platform
 
 > AI-powered credit risk analysis for **US** 🇺🇸 and **Indian** 🇮🇳 companies with real-time scoring, ML model tracking, and proactive alerts.
 
