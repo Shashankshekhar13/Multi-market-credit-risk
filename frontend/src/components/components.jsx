@@ -1066,7 +1066,7 @@ export function Footer() {
         <i className="fa-solid fa-triangle-exclamation"></i>
         For informational purposes only. Not financial or credit advice.
       </div>
-      <div className="footer-copyright">© 2025 CredLens</div>
+      <div className="footer-copyright">© {new Date().getFullYear()} CredLens</div>
     </div>
   )
 }

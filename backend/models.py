@@ -202,3 +202,17 @@ class UserAlertPreference(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="alert_preferences")
+
+
+class Notification(Base):
+    """User alert notifications history table."""
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    ticker = Column(String(20), nullable=False)
+    alert_type = Column(String(50), nullable=False)
+    message = Column(Text, nullable=False)
+    channel = Column(String(20), nullable=False, default="in_app")
+    read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

@@ -114,10 +114,11 @@ async def _persist_score(db: AsyncSession, ticker: str, market_info: dict,
         logger.warning(f"Failed to persist score for {ticker}: {e}")
 
 
+import asyncio
+
 @router.get("/score/{ticker}")
 async def get_credit_score(
     ticker: str,
-    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """Analyzes a stock ticker and returns its creditworthiness score.
@@ -126,7 +127,7 @@ async def get_credit_score(
 
     Flow:
     1. Check Redis cache → return if fresh
-    2. Fetch live data → compute score
+    2. Fetch live data (offloaded to thread) → compute score (offloaded to thread)
     3. Persist to DB + cache in Redis
     """
     logger.info(f"Received request for ticker: {ticker.upper()}")
@@ -139,9 +140,9 @@ async def get_credit_score(
         logger.info(f"Returning cached score for {ticker.upper()}")
         return cached
 
-    # Step 2: Fetch live data
+    # Step 2: Fetch live data asynchronously via thread worker pool
     try:
-        yf_data = get_yahoo_finance_data(ticker)
+        yf_data = await asyncio.to_thread(get_yahoo_finance_data, ticker)
 
         if not yf_data or not yf_data.get("info") or yf_data.get("historical_data") is None:
             logger.warning(f"Invalid ticker or not enough data returned for {ticker}.")
@@ -149,28 +150,37 @@ async def get_credit_score(
 
         company_info = yf_data.get("info", {})
         company_name = company_info.get("longName", ticker)
-        market_sentiment = get_market_sentiment_data(market=market)
-        fred_data = get_fred_data()
+        market_sentiment = await asyncio.to_thread(get_market_sentiment_data, market)
+        fred_data = await asyncio.to_thread(get_fred_data)
         fred_data = fred_data if fred_data is not None else pd.Series(dtype='float64')
-        news_data = get_news_data(query=company_name, market=market)
+        news_data = await asyncio.to_thread(get_news_data, company_name, market)
 
     except Exception as e:
         logger.error(f"Data fetching failed: {e}")
         return JSONResponse(status_code=500, content={"error": True, "detail": "Failed to fetch data."})
 
-    result = get_score_and_explanation(
-        ticker=ticker, yf_data=yf_data,
-        market_sentiment=market_sentiment,
-        fred_data=fred_data,
-        news_data=news_data or []
+    # Compute score offloaded to thread pool to keep API event loop non-blocking
+    result = await asyncio.to_thread(
+        get_score_and_explanation,
+        ticker, yf_data, market_sentiment, fred_data, news_data or []
     )
 
-    # Fetch sector average stability score from database (live peer statistics)
+    # Fetch sector average stability score based on latest score per company in sector
     sector = company_info.get("sector")
     sector_average = 68.0
     if sector:
         try:
-            stmt = select(Score.stability_score).join(Company, Company.ticker == Score.ticker).where(Company.sector == sector)
+            # Query latest score per company in the sector to avoid historical row clutter
+            subq = select(
+                Score.ticker,
+                Score.stability_score,
+                Score.date
+            ).order_by(Score.ticker, desc(Score.date)).subquery()
+
+            stmt = select(subq.c.stability_score).join(
+                Company, Company.ticker == subq.c.ticker
+            ).where(Company.sector == sector)
+
             sector_scores = (await db.execute(stmt)).scalars().all()
             valid_scores = [s for s in sector_scores if s is not None]
             if valid_scores:
@@ -180,7 +190,7 @@ async def get_credit_score(
 
     # Load model registry metadata from MLflow
     from backend.ml.registry import get_production_run_metadata
-    model_metadata = get_production_run_metadata(ticker)
+    model_metadata = await asyncio.to_thread(get_production_run_metadata, ticker)
 
     # Build response
     response = {
@@ -201,13 +211,24 @@ async def get_credit_score(
         "rating_last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     }
 
+    # Sanitize NaN/Inf values for 100% strict JSON compliance
+    def _sanitize_nans(obj):
+        import math
+        if isinstance(obj, float):
+            if math.isnan(obj) or math.isinf(obj):
+                return None
+            return obj
+        elif isinstance(obj, dict):
+            return {str(k): _sanitize_nans(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [_sanitize_nans(v) for v in obj]
+        return obj
+
+    response = _sanitize_nans(response)
+
     # Step 3: Cache + persist
     await cache_set("score", ticker, response)
     await _persist_score(db, ticker, market_info, company_info, result)
-
-    if "error" not in result and result.get('assessment_type') != 'Heuristic':
-        background_tasks.add_task(retrain_model_background, ticker)
-        logger.info(f"Scheduled background retraining for {ticker}.")
 
     return response
 

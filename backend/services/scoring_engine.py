@@ -170,12 +170,13 @@ def get_heuristic_assessment(features: pd.DataFrame, yf_data: dict) -> dict:
     logging.info("ML model training failed. Generating heuristic assessment.")
     score, explanation = get_fundamental_score(yf_data)
     latest_sentiment = features['avg_news_sentiment_30d'].iloc[-1]
+    clean_all_features = {str(k)[:10]: v for k, v in features.to_dict(orient='index').items()}
     return {
         "stability_score": "N/A",
         "explanation": explanation,
         "assessment_type": "Heuristic",
         "latest_sentiment": latest_sentiment,
-        "all_features": features.to_dict(orient='index'),
+        "all_features": clean_all_features,
     }
 
 
@@ -215,14 +216,20 @@ def train_technical_model(features: pd.DataFrame, ticker: str):
 
     X = features[TECHNICAL_FEATURE_COLS]
     y = features['target']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+
+    # Chronological time-series split (prevents temporal data leakage)
+    split_idx = int(len(X) * 0.8)
+    X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
+    y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
+
     scale_pos_weight = (y_train == 0).sum() / (y_train == 1).sum() if (y_train == 1).sum() > 0 else 1
 
-    # Optuna hyperparameter tuning
+    # Optuna hyperparameter tuning with chronological validation split
+    val_split_idx = int(len(X_train) * 0.75)
+    X_train_part, X_val = X_train.iloc[:val_split_idx], X_train.iloc[val_split_idx:]
+    y_train_part, y_val = y_train.iloc[:val_split_idx], y_train.iloc[val_split_idx:]
+
     def objective(trial: Trial) -> float:
-        X_train_part, X_val, y_train_part, y_val = train_test_split(
-            X_train, y_train, test_size=0.25, stratify=y_train, random_state=42
-        )
         params = {
             'objective': 'binary:logistic',
             'eval_metric': 'logloss',
@@ -236,6 +243,8 @@ def train_technical_model(features: pd.DataFrame, ticker: str):
         }
         model = XGBClassifier(**params)
         model.fit(X_train_part, y_train_part, verbose=False)
+        if y_val.nunique() < 2:
+            return 0.5
         y_pred_proba = model.predict_proba(X_val)[:, 1]
         return float(roc_auc_score(y_val, y_pred_proba))
 
@@ -353,9 +362,6 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
         if os.path.exists(model_path):
             model = joblib.load(model_path)
             model_source = "joblib"
-        else:
-            model = train_technical_model(all_features.copy(), ticker=ticker)
-            model_source = "trained"
 
     if model is None:
         return get_heuristic_assessment(all_features, yf_data)
@@ -389,6 +395,7 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
         explanation.append(item)
     explanation.sort(key=lambda x: abs(x['impact']), reverse=True)
 
+    clean_all_features = {str(k)[:10]: v for k, v in all_features.to_dict(orient='index').items()}
     return {
         "stability_score": final_score,
         "technical_score": int((1 - risk_probability) * 100),
@@ -397,5 +404,5 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
         "assessment_type": "ML_Model",
         "model_source": model_source,
         "latest_sentiment": latest_sentiment,
-        "all_features": all_features.to_dict(orient='index'),
+        "all_features": clean_all_features,
     }

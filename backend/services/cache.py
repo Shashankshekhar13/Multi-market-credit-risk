@@ -107,6 +107,19 @@ async def cache_get(prefix: str, identifier: str) -> Optional[dict]:
         return None
 
 
+def _stringify_keys(obj):
+    if isinstance(obj, dict):
+        return {str(k): _stringify_keys(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_stringify_keys(elem) for elem in obj]
+    return obj
+
+
+def _safe_json_dumps(value: dict) -> str:
+    cleaned = _stringify_keys(value)
+    return json.dumps(cleaned, default=str)
+
+
 async def cache_set(prefix: str, identifier: str, value: dict, ttl: Optional[int] = None):
     """Store a value in cache with TTL.
 
@@ -116,18 +129,20 @@ async def cache_set(prefix: str, identifier: str, value: dict, ttl: Optional[int
     ttl = ttl or CACHE_TTL.get(prefix, 900)
     key = _make_key(prefix, identifier)
 
+    serialized = _safe_json_dumps(value)
+
     if not client:
         # In-memory storage fallback
         expiry = time.time() + ttl
         try:
-            _in_memory_cache[key] = (json.dumps(value, default=str), expiry)
+            _in_memory_cache[key] = (serialized, expiry)
             logger.debug(f"In-memory Cache SET: {key} (TTL: {ttl}s)")
         except Exception as e:
             logger.warning(f"In-memory cache set serialization error for {key}: {e}")
         return
 
     try:
-        await client.set(key, json.dumps(value, default=str), ex=ttl)
+        await client.set(key, serialized, ex=ttl)
         logger.debug(f"Redis Cache SET: {key} (TTL: {ttl}s)")
     except Exception as e:
         logger.warning(f"Redis cache set error for {key}: {e}")

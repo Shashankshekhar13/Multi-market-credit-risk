@@ -74,20 +74,20 @@ def is_indian_ticker(ticker: str) -> bool:
 # Yahoo Finance Data
 # ─────────────────────────────────────────────
 
-def get_yahoo_finance_data(ticker_symbol: str):
-    """Fetches historical price data and company info from Yahoo Finance.
+def get_yahoo_finance_data(ticker_symbol: str, timeout: int = 10):
+    """Fetches historical price data and company info from Yahoo Finance with explicit timeout.
 
     Works for both US and Indian tickers (yfinance supports NSE/BSE natively).
     """
     logging.info(f"Fetching yfinance data for ticker: {ticker_symbol}")
     try:
         ticker = yf.Ticker(ticker_symbol)
-        hist_data = ticker.history(period="1y")
+        hist_data = ticker.history(period="1y", timeout=timeout)
         if hist_data.empty:
             return None
 
-        hist_data.index = hist_data.index.map(lambda x: x.strftime('%Y-%m-%d'))
-        info = ticker.info
+        hist_data.index = hist_data.index.map(lambda x: str(x)[:10])
+        info = getattr(ticker, "info", {}) or {}
 
         # Detect exchange from yfinance info when available
         exchange = info.get("exchange", "")
@@ -109,7 +109,7 @@ def get_yahoo_finance_data(ticker_symbol: str):
             detected_exchange = market_info["exchange"]
 
         return {
-            "historical_data": hist_data.to_dict(orient="index"),
+            "historical_data": {str(k)[:10]: v for k, v in hist_data.to_dict(orient="index").items()},
             "info": {
                 "longName": info.get("longName"),
                 "sector": info.get("sector"),
