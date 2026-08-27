@@ -28,9 +28,11 @@ from backend.services.data_fetcher import detect_market
 # ─── Default Ticker Lists ───
 
 US_TICKERS = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "JPM",
-    "V", "JNJ", "WMT", "PG", "MA", "UNH", "HD", "DIS", "NFLX", "BA",
-    "SMCI", "BLK",
+    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "JPM", "V", "JNJ",
+    "WMT", "PG", "MA", "UNH", "HD", "DIS", "NFLX", "BA", "SMCI", "BLK",
+    "BAC", "WFC", "GS", "MS", "C", "XOM", "CVX", "KO", "PEP", "MCD",
+    "NKE", "SBUX", "COST", "PFE", "MRK", "ABBV", "LLY", "ABT", "INTC", "AMD",
+    "CSCO", "ORCL", "IBM", "QCOM", "TXN", "T", "VZ", "CAT", "GE", "HON", "UPS"
 ]
 
 INDIA_TICKERS = [
@@ -38,6 +40,12 @@ INDIA_TICKERS = [
     "HINDUNILVR.NS", "SBIN.NS", "BHARTIARTL.NS", "ITC.NS", "KOTAKBANK.NS",
     "LT.NS", "WIPRO.NS", "TATAMOTORS.NS", "TATASTEEL.NS", "MARUTI.NS",
     "BAJFINANCE.NS", "HCLTECH.NS", "SUNPHARMA.NS", "AXISBANK.NS", "ADANIENT.NS",
+    "ASIANPAINT.NS", "TITAN.NS", "NESTLEIND.NS", "BRITANNIA.NS", "DABUR.NS",
+    "GODREJCP.NS", "PIDILITIND.NS", "BAJAJFINSV.NS", "INDUSINDBK.NS", "ADANIPORTS.NS",
+    "POWERGRID.NS", "NTPC.NS", "ONGC.NS", "COALINDIA.NS", "ULTRACEMCO.NS",
+    "GRASIM.NS", "JSWSTEEL.NS", "HINDALCO.NS", "SHREECEM.NS", "DRREDDY.NS",
+    "CIPLA.NS", "DIVISLAB.NS", "APOLLOHOSP.NS", "SIEMENS.NS", "BOSCHLTD.NS",
+    "M&M.NS", "EICHERMOT.NS", "HEROMOTOCO.NS", "BAJAJ-AUTO.NS", "TECHM.NS"
 ]
 
 

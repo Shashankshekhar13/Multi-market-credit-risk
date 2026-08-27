@@ -122,14 +122,122 @@ export function useAuth() {
 // Sidebar
 // ═══════════════════════════════════════════════════════════════
 
+export const ALL_COMPANY_CATALOG = {
+  US: [
+    { ticker: 'AAPL', name: 'Apple Inc.', sector: 'Tech' },
+    { ticker: 'MSFT', name: 'Microsoft Corp.', sector: 'Tech' },
+    { ticker: 'GOOGL', name: 'Alphabet Inc.', sector: 'Tech' },
+    { ticker: 'AMZN', name: 'Amazon.com Inc.', sector: 'Consumer/Tech' },
+    { ticker: 'NVDA', name: 'Nvidia Corp.', sector: 'Semiconductors' },
+    { ticker: 'META', name: 'Meta Platforms Inc.', sector: 'Tech' },
+    { ticker: 'TSLA', name: 'Tesla Inc.', sector: 'Auto' },
+    { ticker: 'JPM', name: 'JPMorgan Chase & Co.', sector: 'Financials' },
+    { ticker: 'V', name: 'Visa Inc.', sector: 'Financials' },
+    { ticker: 'JNJ', name: 'Johnson & Johnson', sector: 'Healthcare' },
+    { ticker: 'WMT', name: 'Walmart Inc.', sector: 'Retail' },
+    { ticker: 'PG', name: 'Procter & Gamble Co.', sector: 'Consumer' },
+    { ticker: 'MA', name: 'Mastercard Inc.', sector: 'Financials' },
+    { ticker: 'UNH', name: 'UnitedHealth Group', sector: 'Healthcare' },
+    { ticker: 'HD', name: 'Home Depot Inc.', sector: 'Retail' },
+    { ticker: 'DIS', name: 'Walt Disney Co.', sector: 'Media' },
+    { ticker: 'NFLX', name: 'Netflix Inc.', sector: 'Media' },
+    { ticker: 'BA', name: 'Boeing Co.', sector: 'Industrials' },
+    { ticker: 'SMCI', name: 'Super Micro Computer', sector: 'Tech' },
+    { ticker: 'BLK', name: 'BlackRock Inc.', sector: 'Financials' },
+    { ticker: 'BAC', name: 'Bank of America', sector: 'Financials' },
+    { ticker: 'WFC', name: 'Wells Fargo & Co.', sector: 'Financials' },
+    { ticker: 'GS', name: 'Goldman Sachs Group', sector: 'Financials' },
+    { ticker: 'MS', name: 'Morgan Stanley', sector: 'Financials' },
+    { ticker: 'C', name: 'Citigroup Inc.', sector: 'Financials' },
+    { ticker: 'XOM', name: 'ExxonMobil Corp.', sector: 'Energy' },
+    { ticker: 'CVX', name: 'Chevron Corp.', sector: 'Energy' },
+    { ticker: 'KO', name: 'Coca-Cola Co.', sector: 'Consumer' },
+    { ticker: 'PEP', name: 'PepsiCo Inc.', sector: 'Consumer' },
+    { ticker: 'MCD', name: "McDonald's Corp.", sector: 'Consumer' },
+    { ticker: 'NKE', name: 'Nike Inc.', sector: 'Consumer' },
+    { ticker: 'SBUX', name: 'Starbucks Corp.', sector: 'Consumer' },
+    { ticker: 'COST', name: 'Costco Wholesale', sector: 'Retail' },
+    { ticker: 'PFE', name: 'Pfizer Inc.', sector: 'Healthcare' },
+    { ticker: 'MRK', name: 'Merck & Co.', sector: 'Healthcare' },
+    { ticker: 'ABBV', name: 'AbbVie Inc.', sector: 'Healthcare' },
+    { ticker: 'LLY', name: 'Eli Lilly and Co.', sector: 'Healthcare' },
+    { ticker: 'ABT', name: 'Abbott Laboratories', sector: 'Healthcare' },
+    { ticker: 'INTC', name: 'Intel Corp.', sector: 'Semiconductors' },
+    { ticker: 'AMD', name: 'Advanced Micro Devices', sector: 'Semiconductors' },
+    { ticker: 'CSCO', name: 'Cisco Systems', sector: 'Tech' },
+    { ticker: 'ORCL', name: 'Oracle Corp.', sector: 'Tech' },
+    { ticker: 'IBM', name: 'IBM Corp.', sector: 'Tech' },
+    { ticker: 'QCOM', name: 'Qualcomm Inc.', sector: 'Semiconductors' },
+    { ticker: 'TXN', name: 'Texas Instruments', sector: 'Semiconductors' },
+    { ticker: 'T', name: 'AT&T Inc.', sector: 'Telecom' },
+    { ticker: 'VZ', name: 'Verizon Communications', sector: 'Telecom' },
+    { ticker: 'CAT', name: 'Caterpillar Inc.', sector: 'Industrials' },
+    { ticker: 'GE', name: 'General Electric', sector: 'Industrials' },
+    { ticker: 'HON', name: 'Honeywell International', sector: 'Industrials' },
+    { ticker: 'UPS', name: 'United Parcel Service', sector: 'Logistics' },
+  ],
+  IN: [
+    { ticker: 'RELIANCE.NS', name: 'Reliance Industries', sector: 'Energy/Conglomerate' },
+    { ticker: 'TCS.NS', name: 'Tata Consultancy Services', sector: 'IT' },
+    { ticker: 'INFY.NS', name: 'Infosys Ltd.', sector: 'IT' },
+    { ticker: 'HDFCBANK.NS', name: 'HDFC Bank Ltd.', sector: 'Banking' },
+    { ticker: 'ICICIBANK.NS', name: 'ICICI Bank Ltd.', sector: 'Banking' },
+    { ticker: 'HINDUNILVR.NS', name: 'Hindustan Unilever', sector: 'FMCG' },
+    { ticker: 'SBIN.NS', name: 'State Bank of India', sector: 'Banking' },
+    { ticker: 'BHARTIARTL.NS', name: 'Bharti Airtel Ltd.', sector: 'Telecom' },
+    { ticker: 'ITC.NS', name: 'ITC Ltd.', sector: 'FMCG' },
+    { ticker: 'KOTAKBANK.NS', name: 'Kotak Mahindra Bank', sector: 'Banking' },
+    { ticker: 'LT.NS', name: 'Larsen & Toubro', sector: 'Infrastructure' },
+    { ticker: 'WIPRO.NS', name: 'Wipro Ltd.', sector: 'IT' },
+    { ticker: 'TATAMOTORS.NS', name: 'Tata Motors Ltd.', sector: 'Auto' },
+    { ticker: 'TATASTEEL.NS', name: 'Tata Steel Ltd.', sector: 'Metals' },
+    { ticker: 'MARUTI.NS', name: 'Maruti Suzuki India', sector: 'Auto' },
+    { ticker: 'BAJFINANCE.NS', name: 'Bajaj Finance Ltd.', sector: 'NBFC' },
+    { ticker: 'HCLTECH.NS', name: 'HCL Technologies', sector: 'IT' },
+    { ticker: 'SUNPHARMA.NS', name: 'Sun Pharma Industries', sector: 'Pharma' },
+    { ticker: 'AXISBANK.NS', name: 'Axis Bank Ltd.', sector: 'Banking' },
+    { ticker: 'ADANIENT.NS', name: 'Adani Enterprises', sector: 'Conglomerate' },
+    { ticker: 'ASIANPAINT.NS', name: 'Asian Paints Ltd.', sector: 'Consumer' },
+    { ticker: 'TITAN.NS', name: 'Titan Company Ltd.', sector: 'Consumer' },
+    { ticker: 'NESTLEIND.NS', name: 'Nestle India Ltd.', sector: 'FMCG' },
+    { ticker: 'BRITANNIA.NS', name: 'Britannia Industries', sector: 'FMCG' },
+    { ticker: 'DABUR.NS', name: 'Dabur India Ltd.', sector: 'FMCG' },
+    { ticker: 'GODREJCP.NS', name: 'Godrej Consumer Products', sector: 'FMCG' },
+    { ticker: 'PIDILITIND.NS', name: 'Pidilite Industries', sector: 'Chemicals' },
+    { ticker: 'BAJAJFINSV.NS', name: 'Bajaj Finserv Ltd.', sector: 'Financials' },
+    { ticker: 'INDUSINDBK.NS', name: 'IndusInd Bank Ltd.', sector: 'Banking' },
+    { ticker: 'ADANIPORTS.NS', name: 'Adani Ports & SEZ', sector: 'Infrastructure' },
+    { ticker: 'POWERGRID.NS', name: 'Power Grid Corp', sector: 'Utility' },
+    { ticker: 'NTPC.NS', name: 'NTPC Ltd.', sector: 'Utility' },
+    { ticker: 'ONGC.NS', name: 'Oil & Natural Gas Corp', sector: 'Energy' },
+    { ticker: 'COALINDIA.NS', name: 'Coal India Ltd.', sector: 'Mining' },
+    { ticker: 'ULTRACEMCO.NS', name: 'UltraTech Cement', sector: 'Cement' },
+    { ticker: 'GRASIM.NS', name: 'Grasim Industries', sector: 'Cement/Conglomerate' },
+    { ticker: 'JSWSTEEL.NS', name: 'JSW Steel Ltd.', sector: 'Metals' },
+    { ticker: 'HINDALCO.NS', name: 'Hindalco Industries', sector: 'Metals' },
+    { ticker: 'SHREECEM.NS', name: 'Shree Cement Ltd.', sector: 'Cement' },
+    { ticker: 'DRREDDY.NS', name: "Dr. Reddy's Labs", sector: 'Pharma' },
+    { ticker: 'CIPLA.NS', name: 'Cipla Ltd.', sector: 'Pharma' },
+    { ticker: 'DIVISLAB.NS', name: "Divi's Laboratories", sector: 'Pharma' },
+    { ticker: 'APOLLOHOSP.NS', name: 'Apollo Hospitals', sector: 'Healthcare' },
+    { ticker: 'SIEMENS.NS', name: 'Siemens India', sector: 'Industrials' },
+    { ticker: 'BOSCHLTD.NS', name: 'Bosch Ltd.', sector: 'Auto Components' },
+    { ticker: 'M&M.NS', name: 'Mahindra & Mahindra', sector: 'Auto' },
+    { ticker: 'EICHERMOT.NS', name: 'Eicher Motors Ltd.', sector: 'Auto' },
+    { ticker: 'HEROMOTOCO.NS', name: 'Hero MotoCorp Ltd.', sector: 'Auto' },
+    { ticker: 'BAJAJ-AUTO.NS', name: 'Bajaj Auto Ltd.', sector: 'Auto' },
+    { ticker: 'TECHM.NS', name: 'Tech Mahindra Ltd.', sector: 'IT' },
+  ],
+}
+
 const EXAMPLE_TICKERS = {
-  US: ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'TSLA', 'AMZN', 'JPM', 'BA'],
-  IN: ['RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS', 'TMPV.NS', 'WIPRO.NS'],
+  US: ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'TSLA', 'JPM', 'BA'],
+  IN: ['RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS', 'TATAMOTORS.NS', 'WIPRO.NS'],
 }
 
 /**
  * Validate a ticker symbol format. (Priority 2, Item 10 + Priority 4, Item 17)
- * Hardened against injection: only allows alphanumeric, dots, and commas.
+ * Hardened against injection: only allows alphanumeric, dots, commas, &, and hyphens.
  * Returns { valid: boolean, error: string|null }
  */
 export function validateTicker(raw, market = 'US', mode = 'single') {
@@ -152,11 +260,11 @@ export function validateTicker(raw, market = 'US', mode = 'single') {
     return { valid: true, error: null }
   }
 
-  // Strip anything that isn't alphanumeric or a dot (injection hardening)
-  const sanitized = raw.replace(/[^A-Za-z0-9.]/g, '').toUpperCase()
+  // Strip anything that isn't alphanumeric, dot, ampersand, or hyphen
+  const sanitized = raw.replace(/[^A-Za-z0-9.&\-]/g, '').toUpperCase()
 
   if (sanitized !== raw.toUpperCase()) {
-    return { valid: false, error: 'Ticker contains invalid characters. Only letters, numbers, and dots allowed.' }
+    return { valid: false, error: 'Ticker contains invalid characters. Only letters, numbers, dots, &, and hyphens allowed.' }
   }
 
   if (sanitized.length > 20) {
@@ -164,16 +272,16 @@ export function validateTicker(raw, market = 'US', mode = 'single') {
   }
 
   if (market === 'IN') {
-    // Indian tickers: SYMBOL.NS or SYMBOL.BO
-    const inRegex = /^[A-Z][A-Z0-9&]{0,19}\.(NS|BO)$/
+    // Indian tickers: SYMBOL.NS or SYMBOL.BO (allowing &, - in symbol name)
+    const inRegex = /^[A-Z0-9.&\-]+\.(NS|BO)$/i
     if (!inRegex.test(sanitized)) {
-      return { valid: false, error: 'Indian tickers must end with .NS (NSE) or .BO (BSE). e.g. RELIANCE.NS' }
+      return { valid: false, error: 'Indian tickers must end with .NS (NSE) or .BO (BSE). e.g. RELIANCE.NS, M&M.NS' }
     }
   } else {
-    // US tickers: 1-5 uppercase letters (or up to 6 for some)
-    const usRegex = /^[A-Z]{1,6}$/
+    // US tickers: 1-6 uppercase letters/symbols
+    const usRegex = /^[A-Z.&\-]{1,6}$/i
     if (!usRegex.test(sanitized)) {
-      return { valid: false, error: 'US tickers must be 1-6 uppercase letters. e.g. AAPL, MSFT' }
+      return { valid: false, error: 'US tickers must be valid symbols (e.g. AAPL, MSFT, BRK-B).' }
     }
   }
 
@@ -182,27 +290,47 @@ export function validateTicker(raw, market = 'US', mode = 'single') {
 
 export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
   const { isAuthenticated } = useAuth()
-  const [ticker, setTicker] = useState('SMCI')
+  const [ticker, setTicker] = useState('AAPL')
   const [market, setMarket] = useState('US')
   const [validationError, setValidationError] = useState(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [selectedSectorFilter, setSelectedSectorFilter] = useState('ALL')
 
-  // Sanitize input on change (Priority 4, Item 17)
+  // Sanitize input on change
   const handleTickerChange = (value) => {
-    const allowedPattern = mode === 'compare' ? /[^A-Za-z0-9.,]/g : /[^A-Za-z0-9.]/g
+    const allowedPattern = mode === 'compare' ? /[^A-Za-z0-9.,&\-]/g : /[^A-Za-z0-9.&\-]/g
     const sanitized = value.replace(allowedPattern, '').toUpperCase()
     setTicker(sanitized)
     setValidationError(null)
     setShowSuggestions(sanitized.length > 0 && !sanitized.includes(','))
   }
 
-  // Filter suggestions for autocomplete (Priority 5, Item 21)
+  // Filter suggestions across all 101 catalog items (ticker, company name, or sector)
   const suggestions = useMemo(() => {
-    if (!ticker.trim() || ticker.includes(',')) return EXAMPLE_TICKERS[market]
-    return EXAMPLE_TICKERS[market].filter((t) =>
-      t.startsWith(ticker.toUpperCase())
-    )
+    const catalog = ALL_COMPANY_CATALOG[market] || []
+    if (!ticker.trim() || ticker.includes(',')) return catalog.slice(0, 8)
+    
+    const searchStr = ticker.trim().toUpperCase()
+    return catalog.filter((item) =>
+      item.ticker.toUpperCase().includes(searchStr) ||
+      item.name.toUpperCase().includes(searchStr) ||
+      item.sector.toUpperCase().includes(searchStr)
+    ).slice(0, 10)
   }, [ticker, market, mode])
+
+  // Get distinct sectors for sector filter dropdown
+  const availableSectors = useMemo(() => {
+    const catalog = ALL_COMPANY_CATALOG[market] || []
+    const sectors = Array.from(new Set(catalog.map((c) => c.sector))).sort()
+    return ['ALL', ...sectors]
+  }, [market])
+
+  // Filtered catalog by sector for company select
+  const filteredCatalog = useMemo(() => {
+    const catalog = ALL_COMPANY_CATALOG[market] || []
+    if (selectedSectorFilter === 'ALL') return catalog
+    return catalog.filter((c) => c.sector === selectedSectorFilter)
+  }, [market, selectedSectorFilter])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -219,17 +347,18 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
   const handleMarketSwitch = (newMarket) => {
     setMarket(newMarket)
     setTicker(newMarket === 'IN' ? 'RELIANCE.NS' : 'AAPL')
+    setSelectedSectorFilter('ALL')
     setValidationError(null)
     setShowSuggestions(false)
   }
 
-  const handleSuggestionClick = (t) => {
+  const handleSuggestionClick = (selectedTicker) => {
     if (mode === 'compare') {
       const parts = ticker.split(',').map((p) => p.trim())
-      parts[parts.length - 1] = t
+      parts[parts.length - 1] = selectedTicker
       setTicker(parts.join(', '))
     } else {
-      setTicker(t)
+      setTicker(selectedTicker)
     }
     setShowSuggestions(false)
     setValidationError(null)
@@ -301,14 +430,20 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
           />
           {showSuggestions && suggestions.length > 0 && !ticker.includes(',') && (
             <div className="ticker-suggestions">
-              {suggestions.map((t) => (
+              {suggestions.map((item) => (
                 <button
-                  key={t}
+                  key={item.ticker}
                   type="button"
                   className="ticker-suggestion-item"
-                  onMouseDown={(e) => { e.preventDefault(); handleSuggestionClick(t) }}
+                  onMouseDown={(e) => { e.preventDefault(); handleSuggestionClick(item.ticker) }}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', textAlign: 'left' }}
                 >
-                  {t}
+                  <span>
+                    <strong>{item.ticker}</strong> <span style={{ opacity: 0.8, marginLeft: '6px', fontSize: '0.85em' }}>{item.name}</span>
+                  </span>
+                  <span style={{ fontSize: '0.72em', opacity: '0.65', background: 'rgba(255,255,255,0.08)', padding: '2px 6px', borderRadius: '4px' }}>
+                    {item.sector}
+                  </span>
                 </button>
               ))}
             </div>
@@ -360,6 +495,49 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
             {t}
           </button>
         ))}
+      </div>
+
+      {/* Full Tracked Companies Select (51 US / 50 IN) */}
+      <div style={{ marginTop: '1.25rem' }}>
+        <div className="sidebar-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Tracked Catalog ({filteredCatalog.length})</span>
+          <select
+            value={selectedSectorFilter}
+            onChange={(e) => setSelectedSectorFilter(e.target.value)}
+            className="sector-filter-select"
+            style={{
+              fontSize: '0.72rem',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              background: 'rgba(255,255,255,0.08)',
+              color: '#e2e8f0',
+              border: '1px solid rgba(255,255,255,0.15)',
+              cursor: 'pointer',
+            }}
+          >
+            {availableSectors.map((sec) => (
+              <option key={sec} value={sec} style={{ background: '#1e293b', color: '#fff' }}>
+                {sec === 'ALL' ? 'All Sectors' : sec}
+              </option>
+            ))}
+          </select>
+        </div>
+        <select
+          className="sidebar-input company-select-dropdown"
+          style={{ marginTop: '0.4rem', cursor: 'pointer', fontSize: '0.85rem' }}
+          value={ticker}
+          onChange={(e) => {
+            if (e.target.value) handleSuggestionClick(e.target.value)
+          }}
+          disabled={isLoading}
+        >
+          <option value="" disabled>-- Select a Company from List --</option>
+          {filteredCatalog.map((c) => (
+            <option key={c.ticker} value={c.ticker} style={{ background: '#1e293b', color: '#fff' }}>
+              {c.ticker} — {c.name} ({c.sector})
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="sidebar-info">
