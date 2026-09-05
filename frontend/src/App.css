@@ -173,6 +173,187 @@ a:hover {
   line-height: 1.55;
 }
 
+/* Market & Analysis Mode Toggle Buttons */
+.market-toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-sm);
+  padding: 3px;
+  gap: 4px;
+}
+
+.market-toggle-btn {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.market-toggle-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.market-toggle-btn.active {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0px 2px 8px rgba(0, 196, 204, 0.35);
+}
+
+.market-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Quick Pick Ticker Buttons */
+.quick-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.quick-pick-btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-pick-btn:hover:not(:disabled) {
+  background: rgba(0, 196, 204, 0.15);
+  border-color: var(--accent-teal);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.quick-pick-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Tracked Catalog Dropdown & Sector Filter */
+.company-select-dropdown {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-sm);
+  padding: 0.65rem 0.85rem;
+  width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  appearance: auto;
+}
+
+.company-select-dropdown option {
+  background-color: #1a1d24;
+  color: #ffffff;
+  padding: 8px;
+}
+
+/* Ticker Autocomplete & Validation */
+.ticker-autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.ticker-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #1e232d;
+  border: 1px solid rgba(0, 196, 204, 0.3);
+  border-radius: var(--border-radius-sm);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 200;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.ticker-suggestion-item {
+  padding: 0.6rem 0.8rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.ticker-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.ticker-suggestion-item:hover {
+  background: rgba(0, 196, 204, 0.15);
+}
+
+.ticker-validation-error {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.input-error {
+  border-color: var(--color-danger) !important;
+  box-shadow: 0px 0px 8px rgba(255, 75, 75, 0.4) !important;
+}
+
+/* Sidebar Auth Corner Button */
+.sidebar-auth-corner {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-auth-btn {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: rgba(0, 196, 204, 0.1);
+  border: 1px solid var(--accent-teal);
+  color: var(--accent-teal);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.sidebar-auth-btn:hover {
+  background: var(--accent-teal);
+  color: #0e1117;
+  box-shadow: 0px 2px 10px var(--accent-teal-glow);
+}
+
 /* --- Main Content --- */
 .main-content {
   flex: 1;

@@ -72,18 +72,38 @@ def is_indian_ticker(ticker: str) -> bool:
 
 # ─────────────────────────────────────────────
 # Yahoo Finance Data
-# ─────────────────────────────────────────────
+TICKER_ALIASES = {
+    "TATAMOTORS.NS": "TMCV.NS",
+    "TATAMOTORS.BO": "TMCV.BO",
+    "TATAMTRDVR.NS": "TMPV.NS",
+    "TTM": "TMCV.NS",
+}
+
 
 def get_yahoo_finance_data(ticker_symbol: str, timeout: int = 10):
     """Fetches historical price data and company info from Yahoo Finance with explicit timeout.
 
     Works for both US and Indian tickers (yfinance supports NSE/BSE natively).
+    Auto-resolves renamed/demerged tickers like TATAMOTORS.NS -> TMCV.NS.
     """
-    logging.info(f"Fetching yfinance data for ticker: {ticker_symbol}")
+    clean_sym = ticker_symbol.upper().strip()
+    target_sym = TICKER_ALIASES.get(clean_sym, clean_sym)
+    logging.info(f"Fetching yfinance data for ticker: {ticker_symbol} (target: {target_sym})")
+
     try:
-        ticker = yf.Ticker(ticker_symbol)
+        ticker = yf.Ticker(target_sym)
         hist_data = ticker.history(period="1y", timeout=timeout)
+        
+        # If target returned no data and we didn't alias yet, try alias lookup if available
+        if hist_data.empty and target_sym == clean_sym:
+            alt_sym = TICKER_ALIASES.get(clean_sym)
+            if alt_sym:
+                target_sym = alt_sym
+                ticker = yf.Ticker(target_sym)
+                hist_data = ticker.history(period="1y", timeout=timeout)
+
         if hist_data.empty:
+            logging.warning(f"No price history found for {ticker_symbol} (target: {target_sym})")
             return None
 
         hist_data.index = hist_data.index.map(lambda x: str(x)[:10])
@@ -108,11 +128,15 @@ def get_yahoo_finance_data(ticker_symbol: str, timeout: int = 10):
         else:
             detected_exchange = market_info["exchange"]
 
+        long_name = info.get("longName") or info.get("shortName") or clean_sym
+        if clean_sym in ("TATAMOTORS.NS", "TATAMOTORS.BO"):
+            long_name = "Tata Motors Limited"
+
         return {
             "historical_data": {str(k)[:10]: v for k, v in hist_data.to_dict(orient="index").items()},
             "info": {
-                "longName": info.get("longName"),
-                "sector": info.get("sector"),
+                "longName": long_name,
+                "sector": info.get("sector", "Automotive" if "TATAMOTORS" in clean_sym else "General"),
                 "industry": info.get("industry"),
                 "marketCap": info.get("marketCap"),
                 "trailingPE": info.get("trailingPE"),

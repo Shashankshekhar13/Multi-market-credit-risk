@@ -1,8 +1,11 @@
 # backend/routers/companies.py
 """Company-related API endpoints with database querying."""
 
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends, Query
+# pyrefly: ignore [missing-import]
 from sqlalchemy.ext.asyncio import AsyncSession
+# pyrefly: ignore [missing-import]
 from sqlalchemy import select, desc, func
 from typing import Optional
 import logging
