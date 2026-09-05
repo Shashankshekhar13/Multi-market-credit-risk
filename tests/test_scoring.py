@@ -103,5 +103,6 @@ class TestHeuristicAssessment:
         if not features.empty:
             result = get_heuristic_assessment(features, sample_yf_data)
             assert result["assessment_type"] == "Heuristic"
-            assert result["stability_score"] == "N/A"
+            assert isinstance(result["stability_score"], (int, float))
+            assert 0 <= result["stability_score"] <= 100
             assert "explanation" in result

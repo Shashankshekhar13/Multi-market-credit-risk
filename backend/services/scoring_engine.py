@@ -167,12 +167,45 @@ def get_fundamental_score(yf_data: dict):
 # ─────────────────────────────────────────────
 
 def get_heuristic_assessment(features: pd.DataFrame, yf_data: dict) -> dict:
-    logging.info("ML model training failed. Generating heuristic assessment.")
-    score, explanation = get_fundamental_score(yf_data)
-    latest_sentiment = features['avg_news_sentiment_30d'].iloc[-1]
+    logging.info("ML model training fallback. Generating heuristic assessment.")
+    fundamental_score, explanation = get_fundamental_score(yf_data)
+    
+    # Calculate technical & sentiment adjustments
+    penalty = 0
+    if not features.empty:
+        latest = features.iloc[-1]
+        vol = latest.get('volatility_30d', 0)
+        close = latest.get('Close_raw', 1)
+        rel_vol = (vol / close) if close > 0 else 0
+        if rel_vol > 0.05:
+            penalty += 15
+            explanation.append({'feature': '30-Day Volatility', 'value': f"{round(rel_vol*100, 1)}%", 'impact': 2.5})
+        
+        rsi = latest.get('rsi_14d', 50)
+        if rsi < 30:
+            penalty += 10
+            explanation.append({'feature': 'RSI (14-Day Oversold)', 'value': round(rsi, 1), 'impact': 1.5})
+        elif rsi > 70:
+            penalty += 5
+            explanation.append({'feature': 'RSI (14-Day Overbought)', 'value': round(rsi, 1), 'impact': 1.0})
+
+        sentiment = latest.get('avg_news_sentiment_30d', 0)
+        if sentiment < -0.2:
+            penalty += 10
+            explanation.append({'feature': 'Negative News Sentiment', 'value': round(sentiment, 2), 'impact': 2.0})
+        elif sentiment > 0.2:
+            fundamental_score = min(100, fundamental_score + 5)
+            explanation.append({'feature': 'Positive News Sentiment', 'value': round(sentiment, 2), 'impact': -1.0})
+
+    final_score = max(10, min(100, fundamental_score - penalty))
+    explanation.sort(key=lambda x: abs(x.get('impact', 0)), reverse=True)
+    
+    latest_sentiment = features['avg_news_sentiment_30d'].iloc[-1] if not features.empty else 0.0
     clean_all_features = {str(k)[:10]: v for k, v in features.to_dict(orient='index').items()}
     return {
-        "stability_score": "N/A",
+        "stability_score": final_score,
+        "technical_score": max(0, 100 - penalty * 2),
+        "fundamental_score": fundamental_score,
         "explanation": explanation,
         "assessment_type": "Heuristic",
         "latest_sentiment": latest_sentiment,
@@ -345,7 +378,7 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
     latest_sentiment = all_features['avg_news_sentiment_30d'].iloc[-1]
     fundamental_score, fund_explanation = get_fundamental_score(yf_data)
 
-    # Load model: MLflow registry first, then joblib fallback, then train new
+    # Load model: MLflow registry first, then ticker joblib, then base joblib, then train on-demand
     model = None
     model_source = "none"
 
@@ -360,8 +393,32 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
     if model is None:
         model_path = os.path.join(MODEL_DIR, f"xgb_scorer_{ticker}.joblib")
         if os.path.exists(model_path):
-            model = joblib.load(model_path)
-            model_source = "joblib"
+            try:
+                model = joblib.load(model_path)
+                model_source = "joblib"
+            except Exception:
+                model = None
+
+    if model is None:
+        base_path = os.path.join(MODEL_DIR, "xgb_credit_scorer.joblib")
+        if os.path.exists(base_path):
+            try:
+                base_cand = joblib.load(base_path)
+                feats = getattr(base_cand.get_booster(), 'feature_names', [])
+                if set(feats).issubset(set(all_features.columns)):
+                    model = base_cand
+                    model_source = "base_model"
+            except Exception:
+                model = None
+
+    if model is None:
+        logging.info(f"No pre-trained model found for {ticker}. Training model on-demand...")
+        try:
+            model = train_technical_model(all_features, ticker)
+            if model:
+                model_source = "on_demand_trained"
+        except Exception as e:
+            logging.warning(f"On-demand model training failed for {ticker}: {e}")
 
     if model is None:
         return get_heuristic_assessment(all_features, yf_data)
