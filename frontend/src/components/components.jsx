@@ -540,14 +540,6 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
         </select>
       </div>
 
-      <div className="sidebar-info">
-        {mode === 'compare'
-          ? 'Enter up to 3 tickers separated by commas. Click Quick Pick buttons to add them to list.'
-          : (market === 'US'
-            ? 'Enter a US stock ticker (e.g., AAPL, SMCI, BA) to get its real-time, explainable stability score.'
-            : 'Enter an Indian stock ticker with exchange suffix — .NS for NSE, .BO for BSE (e.g., RELIANCE.NS, TCS.NS, INFY.BO).')}
-      </div>
-
       {!isAuthenticated && (
         <div className="sidebar-auth-corner">
           <button
