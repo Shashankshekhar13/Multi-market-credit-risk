@@ -66,51 +66,55 @@ def retrain_model_background(ticker: str):
         logger.error(f"[BACKGROUND] An error occurred during retraining for {ticker}: {e}")
 
 
-async def _persist_score(db: AsyncSession, ticker: str, market_info: dict,
+from backend.services.database import get_db, async_session, _db_available
+
+async def _persist_score(ticker: str, market_info: dict,
                          company_info: dict, result: dict):
-    """Persist score and company data to the database (best-effort)."""
+    """Persist score and company data to the database using an independent session."""
+    if not _db_available or async_session is None:
+        return
     try:
-        # Upsert company
-        stmt = select(Company).where(Company.ticker == ticker.upper())
-        existing = (await db.execute(stmt)).scalar_one_or_none()
+        async with async_session() as db:
+            # Upsert company
+            stmt = select(Company).where(Company.ticker == ticker.upper())
+            existing = (await db.execute(stmt)).scalar_one_or_none()
 
-        if existing:
-            existing.name = company_info.get("longName", ticker)
-            existing.market_cap = company_info.get("marketCap")
-            existing.sector = company_info.get("sector")
-            existing.industry = company_info.get("industry")
-            existing.info_json = company_info
-            existing.last_updated = datetime.now(timezone.utc)
-        else:
-            company = Company(
+            if existing:
+                existing.name = company_info.get("longName", ticker)
+                existing.market_cap = company_info.get("marketCap")
+                existing.sector = company_info.get("sector")
+                existing.industry = company_info.get("industry")
+                existing.info_json = company_info
+                existing.last_updated = datetime.now(timezone.utc)
+            else:
+                company = Company(
+                    ticker=ticker.upper(),
+                    name=company_info.get("longName", ticker),
+                    market=market_info["market"],
+                    exchange=company_info.get("exchange", market_info["exchange"]),
+                    currency=market_info["currency"],
+                    sector=company_info.get("sector"),
+                    industry=company_info.get("industry"),
+                    market_cap=company_info.get("marketCap"),
+                    info_json=company_info,
+                )
+                db.add(company)
+
+            # Insert score record
+            score_record = Score(
                 ticker=ticker.upper(),
-                name=company_info.get("longName", ticker),
-                market=market_info["market"],
-                exchange=company_info.get("exchange", market_info["exchange"]),
-                currency=market_info["currency"],
-                sector=company_info.get("sector"),
-                industry=company_info.get("industry"),
-                market_cap=company_info.get("marketCap"),
-                info_json=company_info,
+                stability_score=result.get("stability_score") if isinstance(result.get("stability_score"), (int, float)) else None,
+                fundamental_score=result.get("fundamental_score"),
+                technical_score=result.get("technical_score"),
+                assessment_type=result.get("assessment_type", "Unknown"),
+                latest_sentiment=result.get("latest_sentiment", 0.0),
+                explanation_json=result.get("explanation"),
             )
-            db.add(company)
+            db.add(score_record)
 
-        # Insert score record
-        score_record = Score(
-            ticker=ticker.upper(),
-            stability_score=result.get("stability_score") if isinstance(result.get("stability_score"), (int, float)) else None,
-            fundamental_score=result.get("fundamental_score"),
-            technical_score=result.get("technical_score"),
-            assessment_type=result.get("assessment_type", "Unknown"),
-            latest_sentiment=result.get("latest_sentiment", 0.0),
-            explanation_json=result.get("explanation"),
-        )
-        db.add(score_record)
-
-        await db.commit()
-        logger.info(f"Persisted score for {ticker.upper()} to database.")
+            await db.commit()
+            logger.info(f"Persisted score for {ticker.upper()} to database.")
     except Exception as e:
-        await db.rollback()
         logger.warning(f"Failed to persist score for {ticker}: {e}")
 
 
@@ -140,20 +144,30 @@ async def get_credit_score(
         logger.info(f"Returning cached score for {ticker.upper()}")
         return cached
 
-    # Step 2: Fetch live data asynchronously via thread worker pool
+    # Step 2: Fetch live data asynchronously via thread worker pool in parallel
     try:
-        yf_data = await asyncio.to_thread(get_yahoo_finance_data, ticker)
+        yf_task = asyncio.to_thread(get_yahoo_finance_data, ticker)
+        sentiment_task = asyncio.to_thread(get_market_sentiment_data, market)
+        fred_task = asyncio.to_thread(get_fred_data)
 
-        if not yf_data or not yf_data.get("info") or yf_data.get("historical_data") is None:
+        yf_data, market_sentiment, fred_data = await asyncio.gather(
+            yf_task, sentiment_task, fred_task, return_exceptions=True
+        )
+
+        if isinstance(yf_data, Exception) or not yf_data or not yf_data.get("info") or yf_data.get("historical_data") is None:
             logger.warning(f"Invalid ticker or not enough data returned for {ticker}.")
             return JSONResponse(status_code=404, content={"error": True, "type": "INVALID_TICKER"})
 
+        market_sentiment = 0.0 if isinstance(market_sentiment, Exception) or market_sentiment is None else market_sentiment
+        fred_data = pd.Series(dtype='float64') if isinstance(fred_data, Exception) or fred_data is None else fred_data
+
         company_info = yf_data.get("info", {})
         company_name = company_info.get("longName", ticker)
-        market_sentiment = await asyncio.to_thread(get_market_sentiment_data, market)
-        fred_data = await asyncio.to_thread(get_fred_data)
-        fred_data = fred_data if fred_data is not None else pd.Series(dtype='float64')
-        news_data = await asyncio.to_thread(get_news_data, company_name, market)
+
+        try:
+            news_data = await asyncio.to_thread(get_news_data, company_name, market)
+        except Exception:
+            news_data = []
 
     except Exception as e:
         logger.error(f"Data fetching failed: {e}")
@@ -188,9 +202,13 @@ async def get_credit_score(
         except Exception as se:
             logger.warning(f"Failed to calculate sector average for {sector}: {se}")
 
-    # Load model registry metadata from MLflow
-    from backend.ml.registry import get_production_run_metadata
-    model_metadata = await asyncio.to_thread(get_production_run_metadata, ticker)
+    # Load model registry metadata from MLflow safely
+    model_metadata = None
+    try:
+        from backend.ml.registry import get_production_run_metadata
+        model_metadata = await asyncio.to_thread(get_production_run_metadata, ticker)
+    except Exception:
+        model_metadata = None
 
     # Build response
     response = {
@@ -226,9 +244,9 @@ async def get_credit_score(
 
     response = _sanitize_nans(response)
 
-    # Step 3: Cache + persist
+    # Step 3: Cache + non-blocking background persistence
     await cache_set("score", ticker, response)
-    await _persist_score(db, ticker, market_info, company_info, result)
+    asyncio.create_task(_persist_score(db, ticker, market_info, company_info, result))
 
     return response
 

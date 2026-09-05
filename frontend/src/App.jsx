@@ -16,7 +16,9 @@ import Register from './pages/Register'
 // -------------------------
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL ||
-  'https://credit-risk-hackathon-production.up.railway.app/api/v1/score'
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8000/api/v1/score'
+    : 'https://credit-risk-hackathon-production.up.railway.app/api/v1/score')
 
 // -------------------------
 // Helpers
@@ -183,7 +185,7 @@ export function Dashboard({ onOpenAuth }) {
       }
 
       const controller = new AbortController()
-      const id = setTimeout(() => controller.abort(), 35000) // 35s timeout check
+      const id = setTimeout(() => controller.abort(), 45000) // 45s timeout check
 
       try {
         const res = await fetch(`${BACKEND_URL}/${tickerInput}`, { signal: controller.signal })
@@ -229,7 +231,7 @@ export function Dashboard({ onOpenAuth }) {
         if (err.name === 'AbortError') {
           setError({
             type: 'TIMEOUT',
-            message: 'Connection timed out. The credit server did not respond within 15 seconds.',
+            message: 'Connection timed out. The credit server did not respond within 45 seconds.',
           })
         } else {
           setError({

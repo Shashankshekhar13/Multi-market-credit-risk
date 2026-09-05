@@ -33,29 +33,38 @@ _redis_client = None
 # In-memory dictionary cache backup (Priority 4, Item 14)
 # Stores data in format: { "key": (json_serialized_str, expiry_timestamp) }
 _in_memory_cache = {}
+_last_redis_retry = 0
+REDIS_RETRY_INTERVAL = 60  # Cooldown between connection attempts if Redis is offline
 
 
 async def get_redis():
-    """Get or create the Redis connection."""
-    global _redis_client
+    """Get or create the Redis connection with non-blocking cooldown."""
+    global _redis_client, _last_redis_retry
     if not _redis_available:
         return None
-    if _redis_client is None:
-        try:
-            _redis_client = aioredis.from_url(
-                REDIS_URL,
-                encoding="utf-8",
-                decode_responses=True,
-                socket_connect_timeout=3,
-            )
-            # Test the connection
-            await _redis_client.ping()
-            logger.info("Redis connection established.")
-        except Exception as e:
-            logger.warning(f"Redis unavailable: {e}. Falling back to in-memory caching.")
-            _redis_client = None
-            return None
-    return _redis_client
+    if _redis_client is not None:
+        return _redis_client
+
+    now = time.time()
+    if now - _last_redis_retry < REDIS_RETRY_INTERVAL:
+        return None
+
+    _last_redis_retry = now
+    try:
+        client = aioredis.from_url(
+            REDIS_URL,
+            encoding="utf-8",
+            decode_responses=True,
+            socket_connect_timeout=0.5,
+        )
+        await client.ping()
+        _redis_client = client
+        logger.info("Redis connection established.")
+        return _redis_client
+    except Exception as e:
+        logger.debug(f"Redis unavailable: {e}. Using in-memory cache.")
+        _redis_client = None
+        return None
 
 
 async def close_redis():

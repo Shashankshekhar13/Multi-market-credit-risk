@@ -21,8 +21,9 @@ try:
             DATABASE_URL,
             pool_size=5,
             max_overflow=15,
-            pool_timeout=30,
+            pool_timeout=2,
             pool_recycle=1800,
+            connect_args={"timeout": 2},
             echo=False,
         )
     else:
@@ -134,13 +135,29 @@ async def check_db_health() -> bool:
 # ─── Dependency Injection ───
 
 class _NullSession:
-    """A dummy session that raises on use — for when DB is unavailable."""
+    """A dummy session that safely no-ops when DB is unavailable."""
     async def __aenter__(self):
         return self
     async def __aexit__(self, *args):
         pass
-    def __getattr__(self, name):
-        raise RuntimeError("Database is not available. Install asyncpg and start PostgreSQL.")
+    async def execute(self, *args, **kwargs):
+        class _EmptyResult:
+            def scalar_one_or_none(self):
+                return None
+            def scalars(self):
+                class _EmptyScalars:
+                    def all(self):
+                        return []
+                return _EmptyScalars()
+        return _EmptyResult()
+    def add(self, *args, **kwargs):
+        pass
+    async def commit(self):
+        pass
+    async def rollback(self):
+        pass
+    async def close(self):
+        pass
 
 
 async def get_db():

@@ -11,7 +11,9 @@ const AuthContext = createContext(null)
 
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL?.replace('/api/v1/score', '') ||
-  'https://credit-risk-hackathon-production.up.railway.app'
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8000'
+    : 'https://credit-risk-hackathon-production.up.railway.app')
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -290,7 +292,7 @@ export function validateTicker(raw, market = 'US', mode = 'single') {
 
 export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
   const { isAuthenticated } = useAuth()
-  const [ticker, setTicker] = useState('AAPL')
+  const [ticker, setTicker] = useState('')
   const [market, setMarket] = useState('US')
   const [validationError, setValidationError] = useState(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -346,7 +348,7 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
 
   const handleMarketSwitch = (newMarket) => {
     setMarket(newMarket)
-    setTicker(newMarket === 'IN' ? 'RELIANCE.NS' : 'AAPL')
+    setTicker('')
     setSelectedSectorFilter('ALL')
     setValidationError(null)
     setShowSuggestions(false)
@@ -374,7 +376,7 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
         <button
           type="button"
           className={`market-toggle-btn ${mode === 'single' ? 'active' : ''}`}
-          onClick={() => { setMode('single'); setValidationError(null); setTicker(market === 'IN' ? 'RELIANCE.NS' : 'AAPL') }}
+          onClick={() => { setMode('single'); setValidationError(null); setTicker('') }}
           disabled={isLoading}
         >
           Single
@@ -382,7 +384,7 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
         <button
           type="button"
           className={`market-toggle-btn ${mode === 'compare' ? 'active' : ''}`}
-          onClick={() => { setMode('compare'); setValidationError(null); setTicker(market === 'IN' ? 'RELIANCE.NS, TCS.NS' : 'AAPL, MSFT') }}
+          onClick={() => { setMode('compare'); setValidationError(null); setTicker('') }}
           disabled={isLoading}
         >
           Compare (2-3)
@@ -531,7 +533,7 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
           }}
           disabled={isLoading}
         >
-          <option value="" disabled>-- Select a Company from List --</option>
+          <option value="">-- Select a Company from List --</option>
           {filteredCatalog.map((c) => (
             <option key={c.ticker} value={c.ticker} style={{ background: '#1e293b', color: '#fff' }}>
               {c.ticker} — {c.name} ({c.sector})
