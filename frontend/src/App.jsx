@@ -76,6 +76,23 @@ function DashboardHeader({ onOpenAlerts, onOpenAuth }) {
   )
 }
 
+// Helper for automatic silent retry on momentary server blips/reloads
+async function fetchWithAutoRetry(url, options, maxRetries = 2, delayMs = 1200) {
+  let lastError
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fetch(url, options)
+    } catch (err) {
+      lastError = err
+      if (err.name === 'AbortError' || attempt === maxRetries) {
+        throw err
+      }
+      await new Promise((res) => setTimeout(res, delayMs))
+    }
+  }
+  throw lastError
+}
+
 // -------------------------
 // Dashboard (Main App Content)
 // -------------------------
@@ -128,10 +145,10 @@ export function Dashboard({ onOpenAuth }) {
         const fetchedResults = await Promise.all(
           tickersToFetch.map(async (t) => {
             const controller = new AbortController()
-            const id = setTimeout(() => controller.abort(), 35000) // 35s timeout check
+            const id = setTimeout(() => controller.abort(), 45000)
 
             try {
-              const res = await fetch(`${BACKEND_URL}/${t}`, { signal: controller.signal })
+              const res = await fetchWithAutoRetry(`${BACKEND_URL}/${t}`, { signal: controller.signal })
               clearTimeout(id)
 
               if (!res.ok) {
@@ -188,7 +205,7 @@ export function Dashboard({ onOpenAuth }) {
       const id = setTimeout(() => controller.abort(), 45000) // 45s timeout check
 
       try {
-        const res = await fetch(`${BACKEND_URL}/${tickerInput}`, { signal: controller.signal })
+        const res = await fetchWithAutoRetry(`${BACKEND_URL}/${tickerInput}`, { signal: controller.signal })
         clearTimeout(id)
 
         if (!res.ok) {
