@@ -134,32 +134,71 @@ def get_fundamental_score(yf_data: dict):
     score = 100
     explanation = []
 
-    dte = info.get('debtToEquity')
-    if dte is None:
-        score -= 25
-        explanation.append({'feature': 'Debt-to-Equity', 'value': 'N/A', 'impact': 2.0})
-    elif dte > 150:
-        score -= 50
-        explanation.append({'feature': 'Debt-to-Equity', 'value': round(dte, 2), 'impact': 4.0})
-    elif dte > 80:
-        score -= 25
-        explanation.append({'feature': 'Debt-to-Equity', 'value': round(dte, 2), 'impact': 2.0})
+    sector = (info.get('sector') or '').lower()
+    industry = (info.get('industry') or '').lower()
+    is_financial = any(k in sector or k in industry for k in ['financial', 'bank', 'insurance', 'capital market'])
 
-    pe = info.get('trailingPE')
-    if pe is None or pe < 0:
-        score -= 30
-        explanation.append({'feature': 'Profitability (P/E)', 'value': pe or 'N/A', 'impact': 3.0})
+    if is_financial:
+        # Banking and Financial Institutions:
+        # Traditional Debt-to-Equity and Cash-per-share are not applicable (deposits are liabilities).
+        # Evaluate Return on Equity (ROE), Return on Assets (ROA), and P/E valuation.
+        roe = info.get('returnOnEquity')
+        if roe is not None:
+            if roe < 0:
+                score -= 25
+                explanation.append({'feature': 'Return on Equity (ROE)', 'value': f"{round(roe * 100, 1)}%", 'impact': 2.5})
+            elif roe < 0.08:
+                score -= 10
+                explanation.append({'feature': 'Return on Equity (ROE)', 'value': f"{round(roe * 100, 1)}%", 'impact': 1.2})
+            elif roe >= 0.12:
+                explanation.append({'feature': 'Return on Equity (ROE)', 'value': f"{round(roe * 100, 1)}%", 'impact': -1.5})
 
-    cash_ps = info.get('totalCashPerShare')
-    if cash_ps is None:
-        score -= 15
-        explanation.append({'feature': 'Cash per Share', 'value': 'N/A', 'impact': 1.5})
-    elif cash_ps < 1:
-        score -= 10
-        explanation.append({'feature': 'Cash per Share', 'value': cash_ps, 'impact': 1.0})
+        pe = info.get('trailingPE') or info.get('forwardPE')
+        if pe is not None:
+            if pe < 0:
+                score -= 25
+                explanation.append({'feature': 'Profitability (P/E)', 'value': round(pe, 2), 'impact': 2.5})
+            elif pe > 30:
+                score -= 10
+                explanation.append({'feature': 'Profitability (P/E)', 'value': round(pe, 2), 'impact': 1.0})
+            elif pe <= 20:
+                explanation.append({'feature': 'Profitability (P/E)', 'value': round(pe, 2), 'impact': -1.0})
+
+        roa = info.get('returnOnAssets')
+        if roa is not None:
+            if roa < 0.005:
+                score -= 10
+                explanation.append({'feature': 'Return on Assets (ROA)', 'value': f"{round(roa * 100, 2)}%", 'impact': 1.2})
+            elif roa >= 0.012:
+                explanation.append({'feature': 'Return on Assets (ROA)', 'value': f"{round(roa * 100, 2)}%", 'impact': -1.0})
+
+    else:
+        dte = info.get('debtToEquity')
+        if dte is None:
+            score -= 25
+            explanation.append({'feature': 'Debt-to-Equity', 'value': 'N/A', 'impact': 2.0})
+        elif dte > 150:
+            score -= 50
+            explanation.append({'feature': 'Debt-to-Equity', 'value': round(dte, 2), 'impact': 4.0})
+        elif dte > 80:
+            score -= 25
+            explanation.append({'feature': 'Debt-to-Equity', 'value': round(dte, 2), 'impact': 2.0})
+
+        pe = info.get('trailingPE')
+        if pe is None or pe < 0:
+            score -= 30
+            explanation.append({'feature': 'Profitability (P/E)', 'value': pe or 'N/A', 'impact': 3.0})
+
+        cash_ps = info.get('totalCashPerShare')
+        if cash_ps is None:
+            score -= 15
+            explanation.append({'feature': 'Cash per Share', 'value': 'N/A', 'impact': 1.5})
+        elif cash_ps < 1:
+            score -= 10
+            explanation.append({'feature': 'Cash per Share', 'value': cash_ps, 'impact': 1.0})
 
     logging.info(f"Fundamental Score calculated: {score}")
-    return max(0, score), explanation
+    return max(0, min(100, score)), explanation
 
 
 # ─────────────────────────────────────────────
@@ -430,7 +469,9 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
     latest_tech_features = all_features[technical_feature_cols].iloc[-1:]
 
     risk_probability = model.predict_proba(latest_tech_features)[:, 1][0]
-    technical_penalty = int(risk_probability * 50)
+    # Calibrated technical penalty: market momentum / technical signals can adjust credit rating up to 25 points,
+    # ensuring strong fundamental balance sheets are not artificially pushed into distressed/volatile classification.
+    technical_penalty = int(risk_probability * 25)
     logging.info(f"Technical model risk probability: {risk_probability:.2f}, penalty: {technical_penalty}")
 
     final_score = max(0, fundamental_score - technical_penalty)

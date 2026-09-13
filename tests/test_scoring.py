@@ -67,6 +67,23 @@ class TestFundamentalScore:
         score, explanation = get_fundamental_score(data)
         assert score == 100
 
+    def test_bank_fundamental_scoring(self):
+        # Banks should not be penalized for non-applicable D/E or cash per share
+        data = {
+            "info": {
+                "sector": "Financial Services",
+                "industry": "Banks - Diversified",
+                "returnOnEquity": 0.16,
+                "trailingPE": 12.0,
+                "returnOnAssets": 0.013,
+            }
+        }
+        score, explanation = get_fundamental_score(data)
+        assert score >= 90
+        features = [item["feature"] for item in explanation]
+        assert "Debt-to-Equity" not in features
+        assert "Cash per Share" not in features
+
 
 class TestFeatureEngineering:
     """Tests for the feature engineering pipeline."""

@@ -226,7 +226,7 @@ async def get_credit_score(
         "recent_news_for_context": news_data[:5] if news_data else [],
         "model_metadata": model_metadata,
         "sector_average": sector_average,
-        "rating_last_updated": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "rating_last_updated": "per internal registry",
     }
 
     # Sanitize NaN/Inf values for 100% strict JSON compliance

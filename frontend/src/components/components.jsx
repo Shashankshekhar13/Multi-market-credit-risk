@@ -562,22 +562,37 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
 // MetricCard
 // ═══════════════════════════════════════════════════════════════
 
-export function MetricCard({ label, value, delta, deltaType, timestamp }) {
+export function MetricCard({ label, value, delta, deltaType, subtext, subtextLink, timestamp }) {
   const deltaClass = deltaType || ''
 
   return (
     <div className="metric-card">
-      <div className="metric-label">{label}</div>
-      <div className="metric-value">{value}</div>
-      {delta !== undefined && delta !== null && (
-        <div className={`metric-delta ${deltaClass}`}>{delta}</div>
-      )}
-      {/* Data freshness timestamp (Priority 2, Item 9) */}
-      {timestamp && (
-        <div className="metric-timestamp">
-          Data as of {timestamp}
-        </div>
-      )}
+      <div className="metric-header-group">
+        <div className="metric-label">{label}</div>
+        <div className="metric-value">{value}</div>
+      </div>
+      <div className="metric-footer-group">
+        {delta !== undefined && delta !== null && (
+          <div className={`metric-delta ${deltaClass}`}>{delta}</div>
+        )}
+        {subtext && (
+          <div className="metric-card-subtext">
+            {subtextLink ? (
+              <a href={subtextLink} target="_blank" rel="noopener noreferrer" className="metric-subtext-link" title="Agency methodology">
+                <span>{subtext}</span>
+                <i className="fa-solid fa-arrow-up-right-from-square"></i>
+              </a>
+            ) : (
+              <span>{subtext}</span>
+            )}
+          </div>
+        )}
+        {timestamp && (
+          <div className="metric-timestamp">
+            Data as of {timestamp}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -622,24 +637,24 @@ export function ScoreStatus({ score, assessmentType }) {
 const FEATURE_DICTIONARY = {
   price_change_pct_7d: {
     label: '7-Day Price Change',
-    tooltip: 'How much the stock price moved in the last 7 days. Large drops signal short-term selling pressure, increasing credit risk.',
+    tooltip: 'Measures 7-day price movement. Sharp drops signal distress, while parabolic rallies can elevate short-term pullback and volatility risk.',
     unit: '%',
     format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`,
-    context: (v) => v > 5 ? 'strong rally' : v > 0 ? 'gaining' : v > -5 ? 'declining' : 'sharp sell-off',
+    context: (v, isRisk) => v > 5 ? (isRisk ? 'rapid rally (elevates pullback risk)' : 'strong rally') : v > 0 ? (isRisk ? 'gaining (volatility risk)' : 'gaining') : v > -5 ? 'declining' : 'sharp sell-off',
   },
   price_change_pct_30d: {
     label: '30-Day Price Change',
-    tooltip: 'Stock price movement over the past month. Sustained declines may indicate deteriorating fundamentals or market confidence.',
+    tooltip: 'Stock price movement over the past month. Sustained declines reflect deteriorating confidence, while extreme surges increase volatility risk.',
     unit: '%',
     format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`,
-    context: (v) => v > 10 ? 'strong uptrend' : v > 0 ? 'positive' : v > -10 ? 'mild decline' : 'significant decline',
+    context: (v, isRisk) => v > 10 ? (isRisk ? 'sharp surge (volatility risk)' : 'strong uptrend') : v > 0 ? (isRisk ? 'positive run-up (pullback risk)' : 'positive') : v > -10 ? 'mild decline' : 'significant decline',
   },
   price_change_pct_90d: {
     label: '90-Day Price Change',
-    tooltip: 'Quarterly price trend. Longer-term declines can signal structural problems that elevate credit risk.',
+    tooltip: 'Quarterly price trajectory. Downward trends heighten default risk, while rapid non-linear run-ups also introduce overbought mean-reversion risk.',
     unit: '%',
     format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}%`,
-    context: (v) => v > 15 ? 'bullish trend' : v > 0 ? 'stable' : v > -15 ? 'underperforming' : 'deep decline',
+    context: (v, isRisk) => v > 15 ? (isRisk ? 'bullish run (pullback risk)' : 'bullish trend') : v > 0 ? (isRisk ? 'moderate gain (volatility risk)' : 'stable uptrend') : v > -15 ? 'underperforming' : 'deep decline',
   },
   volatility_30d: {
     label: '30-Day Volatility',
@@ -710,21 +725,35 @@ const FEATURE_DICTIONARY = {
     tooltip: 'Total debt relative to shareholder equity. High ratios (>100) mean the company relies heavily on borrowed money, increasing default risk.',
     unit: '',
     format: (v) => typeof v === 'number' ? v.toFixed(1) : String(v),
-    context: (v) => typeof v !== 'number' ? 'data unavailable' : v > 150 ? 'highly leveraged' : v > 80 ? 'moderate leverage' : 'conservative',
+    context: (v) => typeof v !== 'number' ? '' : v > 150 ? 'highly leveraged' : v > 80 ? 'moderate leverage' : 'conservative',
   },
   'Profitability (P/E)': {
     label: 'Profitability (P/E Ratio)',
     tooltip: 'Price-to-Earnings ratio. Negative or missing P/E suggests the company is losing money, a significant credit risk factor.',
     unit: 'x',
     format: (v) => typeof v === 'number' ? `${v.toFixed(1)}x` : String(v),
-    context: (v) => typeof v !== 'number' ? 'unprofitable' : v > 50 ? 'expensive valuation' : v > 15 ? 'fair value' : 'cheap or distressed',
+    context: (v) => typeof v !== 'number' ? 'unprofitable' : v > 50 ? 'expensive valuation' : v > 15 ? 'fair value' : 'favorable valuation',
   },
   'Cash per Share': {
     label: 'Cash per Share',
     tooltip: 'How much liquid cash the company holds per share. Low cash reserves mean less buffer against financial shocks.',
     unit: '',
     format: (v) => typeof v === 'number' ? `$${v.toFixed(2)}` : String(v),
-    context: (v) => typeof v !== 'number' ? 'data unavailable' : v > 10 ? 'strong cash position' : v > 1 ? 'adequate' : 'low reserves',
+    context: (v) => typeof v !== 'number' ? '' : v > 10 ? 'strong cash position' : v > 1 ? 'adequate' : 'low reserves',
+  },
+  'Return on Equity (ROE)': {
+    label: 'Return on Equity (ROE)',
+    tooltip: 'Net income returned as a percentage of shareholders equity. Strong ROE demonstrates robust capital generation and stability.',
+    unit: '',
+    format: (v) => typeof v === 'string' ? v : `${(v * 100).toFixed(1)}%`,
+    context: (v) => 'capital efficiency',
+  },
+  'Return on Assets (ROA)': {
+    label: 'Return on Assets (ROA)',
+    tooltip: 'Measures how efficiently the asset base generates earnings. Vital soundness metric for financial institutions.',
+    unit: '',
+    format: (v) => typeof v === 'string' ? v : `${(v * 100).toFixed(2)}%`,
+    context: (v) => 'asset profitability',
   },
 }
 
@@ -747,17 +776,21 @@ function getFeatureTooltip(key) {
  * Format a feature value with units and contextual annotation.
  * Returns { formatted, context } or null.
  */
-function formatFeatureValue(key, rawValue) {
+function formatFeatureValue(key, rawValue, isRisk = false) {
+  // Drop genuinely unavailable data
+  if (rawValue === 'N/A' || rawValue == null || rawValue === 'data unavailable') {
+    return null
+  }
+
   const entry = FEATURE_DICTIONARY[key]
   if (!entry) {
-    // Best-effort for unknown features
     if (typeof rawValue === 'number') {
       return { formatted: rawValue.toFixed(2), context: '' }
     }
     return { formatted: String(rawValue), context: '' }
   }
   const formatted = entry.format(rawValue)
-  const context = entry.context(rawValue)
+  const context = entry.context ? entry.context(rawValue, isRisk) : ''
   return { formatted, context }
 }
 
@@ -770,8 +803,12 @@ function formatFeatureValue(key, rawValue) {
 export function DriversChart({ explanation, assessmentType }) {
   const [openTooltip, setOpenTooltip] = useState(null)
 
-  // Heuristic fallback — show qualitative observations
+  // Heuristic fallback — show qualitative observations (filtering unavailable)
   if (assessmentType === 'Heuristic') {
+    const validObs = (explanation || []).filter(
+      (obs) => obs.value !== 'N/A' && obs.value != null && obs.value !== 'data unavailable'
+    )
+
     return (
       <div>
         <h3 className="section-subtitle">Why this score? (Key Drivers)</h3>
@@ -780,7 +817,7 @@ export function DriversChart({ explanation, assessmentType }) {
         </div>
         <h3 className="section-subtitle">Qualitative Observations</h3>
         <ul className="observation-list">
-          {explanation.map((obs, idx) => (
+          {validObs.map((obs, idx) => (
             <li key={idx}>
               <span className="observation-feature">{getFeatureLabel(obs.feature)}:</span> {obs.value}
             </li>
@@ -790,9 +827,13 @@ export function DriversChart({ explanation, assessmentType }) {
     )
   }
 
-  // ML-based: sort by absolute impact descending
-  const sorted = [...explanation]
-    .filter((d) => Math.abs(d.impact) > 0.001)
+  // ML-based: sort by absolute impact descending, dropping genuinely unavailable fields
+  const sorted = [...(explanation || [])]
+    .filter((d) => {
+      if (Math.abs(d.impact) <= 0.001) return false
+      if (d.value === 'N/A' || d.value == null || d.value === 'data unavailable') return false
+      return true
+    })
     .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact))
 
   const maxImpact = Math.max(...sorted.map((d) => Math.abs(d.impact)), 0.01)
@@ -806,9 +847,10 @@ export function DriversChart({ explanation, assessmentType }) {
           const barWidth = (Math.abs(item.impact) / maxImpact) * 100
           const label = getFeatureLabel(item.feature)
           const tooltip = getFeatureTooltip(item.feature)
-          const valueInfo = formatFeatureValue(item.feature, item.value)
+          const valueInfo = formatFeatureValue(item.feature, item.value, isRisk)
           const direction = isRisk ? '▲ Increases Risk' : '▼ Decreases Risk'
           const dirClass = isRisk ? 'risk-up' : 'risk-down'
+          const isBullishRallyRisk = isRisk && String(item.feature).startsWith('price_change') && Number(item.value) > 0
 
           return (
             <div key={idx} className="driver-row">
@@ -847,7 +889,7 @@ export function DriversChart({ explanation, assessmentType }) {
                 </span>
               </div>
 
-              {/* Current value with context (Priority 1, Item 3) */}
+              {/* Current value with context */}
               {valueInfo && (
                 <div className="driver-value-annotation">
                   <span className="driver-value-current">
@@ -858,6 +900,14 @@ export function DriversChart({ explanation, assessmentType }) {
                       — {valueInfo.context}
                     </span>
                   )}
+                </div>
+              )}
+
+              {/* Clarification note when a positive price rally increases model risk */}
+              {isBullishRallyRisk && (
+                <div className="driver-risk-clarification">
+                  <i className="fa-solid fa-circle-info"></i>
+                  <span>Sharp price surges increase short-term volatility and pullback risk in credit models.</span>
                 </div>
               )}
             </div>
@@ -1251,7 +1301,9 @@ export function SourceAttribution({ market, agencyRating, lastUpdated }) {
     ? 'https://www.crisil.com/en/home/our-businesses/ratings.html'
     : 'https://www.spglobal.com/ratings/'
 
-  const displayDate = lastUpdated || new Date().toISOString().slice(0, 10)
+  const displayUpdated = !lastUpdated || lastUpdated === 'per internal registry'
+    ? 'per internal registry'
+    : `Updated: ${lastUpdated}`
 
   return (
     <div className="source-attribution">
@@ -1264,7 +1316,7 @@ export function SourceAttribution({ market, agencyRating, lastUpdated }) {
         <i className="fa-solid fa-arrow-up-right-from-square"></i>
         {agencyName}: {agencyRating || 'N/A'}
       </a>
-      <span className="source-updated">Updated: {displayDate}</span>
+      <span className="source-updated">{displayUpdated}</span>
     </div>
   )
 }
@@ -1701,7 +1753,7 @@ export function SectorBenchmark({ ticker, companyScore, sectorName, sectorAverag
       <div className={`benchmark-comparison-badge ${flagClass}`}>
         <span className="benchmark-comparison-icon">{directionIcon}</span>
         <span>
-          {isBetter ? 'Outperforming' : 'Underperforming'} peers by {Math.abs(delta)} pts
+          {isBetter ? 'Outperforming' : 'Underperforming'} peers by {Math.abs(delta).toFixed(1)} pts
         </span>
       </div>
 

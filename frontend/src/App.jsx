@@ -117,7 +117,10 @@ export function Dashboard({ onOpenAuth }) {
     setCompareData([])
     setCurrentTicker(tickerInput)
 
-    const now = new Date().toLocaleTimeString(undefined, {
+    const now = new Date().toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -268,7 +271,8 @@ export function Dashboard({ onOpenAuth }) {
   const companyName = data?.company_name || currentTicker
   const score = scoreResult?.stability_score ?? 0
   const assessmentType = scoreResult?.assessment_type
-  const sentiment = scoreResult?.latest_sentiment ?? 0
+  const rawSentiment = scoreResult?.latest_sentiment ?? 0
+  const sentiment = Math.abs(rawSentiment) < 0.005 ? 0 : rawSentiment
   const currency = data?.currency || 'USD'
   const market = data?.market || 'US'
   const exchange = data?.exchange || ''
@@ -277,7 +281,7 @@ export function Dashboard({ onOpenAuth }) {
   const modelSource = scoreResult?.model_source || ''
 
   const sentimentText =
-    sentiment > 0.05 ? 'Positive' : sentiment < -0.05 ? 'Negative' : 'Neutral'
+    sentiment > 0.05 ? 'Positive Press (30d)' : sentiment < -0.05 ? 'Negative Press (30d)' : 'Neutral Tone (30d)'
   const sentimentDeltaType =
     sentiment > 0.05 ? 'positive' : sentiment < -0.05 ? 'negative' : 'neutral-outlook'
 
@@ -300,6 +304,44 @@ export function Dashboard({ onOpenAuth }) {
           : 'negative'
 
   const ratingLabel = market === 'IN' ? 'CRISIL/ICRA Rating' : 'S&P Rating'
+
+  // Market Cap classification for Card 3
+  const capVal = info.marketCap
+  let capTier = 'Public Equity'
+  if (capVal) {
+    if (market === 'IN') {
+      capTier = capVal >= 8e11 ? 'Mega Cap Tier' : capVal >= 1.5e11 ? 'Large Cap Tier' : capVal >= 4e10 ? 'Mid Cap Tier' : 'Small Cap Tier'
+    } else {
+      capTier = capVal >= 2e11 ? 'Mega Cap Tier' : capVal >= 1e10 ? 'Large Cap Tier' : capVal >= 2e9 ? 'Mid Cap Tier' : 'Small Cap Tier'
+    }
+  }
+
+  // P/E valuation context for Card 4
+  const peVal = info.trailingPE
+  let peLabel = 'TTM Multiple'
+  let peDeltaType = 'neutral-outlook'
+  if (peVal == null || peVal < 0) {
+    peLabel = 'Unprofitable (TTM)'
+    peDeltaType = 'negative'
+  } else if (peVal < 15) {
+    peLabel = 'Attractive Valuation'
+    peDeltaType = 'positive'
+  } else if (peVal <= 28) {
+    peLabel = 'Fair Valuation (TTM)'
+    peDeltaType = 'neutral-outlook'
+  } else {
+    peLabel = 'Growth Multiple (TTM)'
+    peDeltaType = 'neutral-outlook'
+  }
+
+  // Rating grade context for Card 5
+  const upperRating = (agencyRating || '').toUpperCase()
+  const isInvestmentGrade = upperRating.includes('AAA') || upperRating.includes('AA') || upperRating.includes('A') || upperRating.includes('BBB')
+  const ratingGrade = isInvestmentGrade ? 'Investment Grade' : (agencyRating === 'N/A' ? 'Unrated' : 'Speculative Grade')
+  const ratingDeltaType = isInvestmentGrade ? 'positive' : 'negative'
+  const agencyUrl = market === 'IN'
+    ? 'https://www.crisil.com/en/home/our-businesses/ratings.html'
+    : 'https://www.spglobal.com/ratings/'
 
   return (
     <div className="app-layout">
@@ -347,6 +389,11 @@ export function Dashboard({ onOpenAuth }) {
                     <i className="fa-solid fa-brain"></i> {modelSource}
                   </span>
                 )}
+                {fetchTime && (
+                  <span className="last-refreshed-badge" title={`Data fetched on ${fetchTime}`}>
+                    <i className="fa-regular fa-clock"></i> Last refreshed: {fetchTime}
+                  </span>
+                )}
                 <DownloadPDFButton ticker={currentTicker} companyName={companyName} onOpenAuth={onOpenAuth} />
               </div>
             </div>
@@ -360,7 +407,6 @@ export function Dashboard({ onOpenAuth }) {
                 value={score}
                 delta={outlookLabel}
                 deltaType={outlookDeltaType}
-                timestamp={fetchTime}
               />
 
               <MetricCard
@@ -368,30 +414,30 @@ export function Dashboard({ onOpenAuth }) {
                 value={sentiment.toFixed(2)}
                 delta={sentimentText}
                 deltaType={sentimentDeltaType}
-                timestamp={fetchTime}
               />
               
               <MetricCard
                 label="Market Cap"
                 value={formatMarketCap(info.marketCap, currency)}
-                timestamp={fetchTime}
+                delta={capTier}
+                deltaType="tier"
               />
               
               <MetricCard
                 label="P/E Ratio"
                 value={info.trailingPE != null ? info.trailingPE.toFixed(2) : 'N/A'}
-                timestamp={fetchTime}
+                delta={peLabel}
+                deltaType={peDeltaType}
               />
               
-              <div className="metric-card-wrapper-attribution">
-                <MetricCard
-                  label={ratingLabel}
-                  value={agencyRating}
-                  timestamp={fetchTime}
-                />
-                {/* Source attribution next to rating badges (Priority 5, Item 19) */}
-                <SourceAttribution market={market} agencyRating={agencyRating} lastUpdated={data?.rating_last_updated} />
-              </div>
+              <MetricCard
+                label={ratingLabel}
+                value={agencyRating}
+                delta={ratingGrade}
+                deltaType={ratingDeltaType}
+                subtext="per internal registry"
+                subtextLink={agencyUrl}
+              />
             </div>
 
             <div className="dashboard-grid-widgets">
@@ -441,7 +487,14 @@ export function Dashboard({ onOpenAuth }) {
           <div className="compare-dashboard animate-fade-in">
             <div className="analysis-header">
               <h2 className="section-title">Peer Credit Comparison</h2>
-              <DownloadPDFButton ticker={currentTicker} companyName="Batch Comparison" onOpenAuth={onOpenAuth} />
+              <div className="analysis-badges">
+                {fetchTime && (
+                  <span className="last-refreshed-badge" title={`Data fetched on ${fetchTime}`}>
+                    <i className="fa-regular fa-clock"></i> Last refreshed: {fetchTime}
+                  </span>
+                )}
+                <DownloadPDFButton ticker={currentTicker} companyName="Batch Comparison" onOpenAuth={onOpenAuth} />
+              </div>
             </div>
 
             {/* Grid of scorecard comparison cards */}

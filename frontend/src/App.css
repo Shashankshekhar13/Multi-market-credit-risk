@@ -448,6 +448,11 @@ a:hover {
   padding: 1rem 1.15rem;
   transition: var(--transition);
   cursor: default;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 108px;
+  box-sizing: border-box;
 }
 
 .metric-card:hover {
@@ -456,17 +461,29 @@ a:hover {
   background-color: var(--bg-card-hover);
 }
 
+.metric-header-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-footer-group {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
 .metric-label {
-  font-size: 0.8em;
+  font-size: 0.78em;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .metric-value {
-  font-size: 1.8em;
+  font-size: 1.75em;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.2;
@@ -474,8 +491,10 @@ a:hover {
 
 .metric-delta {
   font-size: 0.78em;
-  font-weight: 500;
-  margin-top: 0.25rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .metric-delta.positive {
@@ -487,11 +506,38 @@ a:hover {
 }
 
 .metric-delta.neutral-outlook {
-  color: var(--color-warning);
+  color: #e0e0e0;
+  opacity: 0.85;
+}
+
+.metric-delta.tier {
+  color: #4dd0e1;
 }
 
 .metric-delta.heuristic {
   color: var(--accent-teal);
+}
+
+.metric-card-subtext {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+.metric-subtext-link {
+  color: var(--accent-teal);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.metric-subtext-link:hover {
+  text-decoration: underline;
+  color: #fff;
 }
 
 /* --- Divider --- */
@@ -1083,6 +1129,31 @@ a:hover {
   font-size: 0.7rem;
 }
 
+.last-refreshed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+  transition: var(--transition);
+}
+
+.last-refreshed-badge:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+}
+
+.last-refreshed-badge i {
+  color: var(--accent-teal, #00c4cc);
+  font-size: 0.75rem;
+}
+
 /* ─── Notification Bell ─── */
 
 .notification-bell {
@@ -1454,6 +1525,25 @@ a:hover {
   color: var(--text-muted);
   font-style: italic;
   margin-left: 0.15rem;
+}
+
+.driver-risk-clarification {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.08);
+  border: 1px solid rgba(243, 156, 18, 0.22);
+  border-radius: 5px;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  line-height: 1.35;
+}
+
+.driver-risk-clarification i {
+  font-size: 0.75rem;
+  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════
