@@ -246,7 +246,7 @@ async def get_credit_score(
 
     # Step 3: Cache + non-blocking background persistence
     await cache_set("score", ticker, response)
-    asyncio.create_task(_persist_score(db, ticker, market_info, company_info, result))
+    asyncio.create_task(_persist_score(ticker, market_info, company_info, result))
 
     return response
 

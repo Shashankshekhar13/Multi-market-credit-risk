@@ -56,15 +56,15 @@ def engineer_features(yf_data: dict, market_sentiment: float, fred_data: pd.Seri
         fred_df = pd.DataFrame(fred_data, columns=['treasury_rate_10y'])
         fred_df.index = pd.to_datetime(fred_df.index)
         stock_df = pd.merge(stock_df, fred_df, left_index=True, right_index=True, how='left')
-        stock_df['treasury_rate_10y'].ffill(inplace=True)
+        stock_df['treasury_rate_10y'] = stock_df['treasury_rate_10y'].ffill()
         stock_df['treasury_rate_change_30d'] = stock_df['treasury_rate_10y'].diff(periods=30).fillna(0)
     else:
         stock_df['treasury_rate_change_30d'] = 0
 
     # Price change features
-    stock_df['price_change_pct_7d'] = close_prices.pct_change(periods=7).fillna(0) * 100
-    stock_df['price_change_pct_30d'] = close_prices.pct_change(periods=30).fillna(0) * 100
-    stock_df['price_change_pct_90d'] = close_prices.pct_change(periods=90).fillna(0) * 100
+    stock_df['price_change_pct_7d'] = close_prices.pct_change(periods=7, fill_method=None).fillna(0) * 100
+    stock_df['price_change_pct_30d'] = close_prices.pct_change(periods=30, fill_method=None).fillna(0) * 100
+    stock_df['price_change_pct_90d'] = close_prices.pct_change(periods=90, fill_method=None).fillna(0) * 100
 
     # Volatility features
     stock_df['volatility_30d'] = close_prices.rolling(window=30).std().fillna(0)
@@ -119,9 +119,9 @@ def engineer_features(yf_data: dict, market_sentiment: float, fred_data: pd.Seri
         'debt_to_equity', 'cash_per_share',
     ]
     features = stock_df[feature_columns].copy()
-    features.replace([np.inf, -np.inf], 0, inplace=True)
-    features.fillna({'price_to_ma_ratio': 1.0}, inplace=True)
-    features.fillna(0, inplace=True)
+    features = features.replace([np.inf, -np.inf], 0)
+    features = features.fillna({'price_to_ma_ratio': 1.0})
+    features = features.fillna(0)
     return features
 
 
