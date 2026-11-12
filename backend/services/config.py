@@ -11,6 +11,8 @@ FRED_API_KEY = os.getenv("FRED_API_KEY")
 
 # --- Database ---
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://credlens:credlens@localhost:5432/credlens")
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 # --- Auth ---

@@ -21,9 +21,9 @@ try:
             DATABASE_URL,
             pool_size=5,
             max_overflow=15,
-            pool_timeout=2,
+            pool_timeout=10,
             pool_recycle=1800,
-            connect_args={"timeout": 2},
+            connect_args={"timeout": 10},
             echo=False,
         )
     else:
