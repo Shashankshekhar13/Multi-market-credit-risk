@@ -608,7 +608,8 @@ export function ScoreStatus({ score, assessmentType }) {
   if (score > 75) {
     return (
       <div className="status-banner stable">
-        ✅ Stable: Credit-risk under control.
+        <i className="fa-solid fa-circle-check"></i>
+        <span>Stable: Credit-risk under control.</span>
       </div>
     )
   }
@@ -616,14 +617,16 @@ export function ScoreStatus({ score, assessmentType }) {
   if (score > 50) {
     return (
       <div className="status-banner neutral">
-        ⚠ Neutral: Some factors indicate potential risk.
+        <i className="fa-solid fa-triangle-exclamation"></i>
+        <span>Neutral: Some factors indicate potential risk.</span>
       </div>
     )
   }
 
   return (
     <div className="status-banner volatile">
-      🚨 Volatile: Significant downside risk detected.
+      <i className="fa-solid fa-circle-exclamation"></i>
+      <span>Volatile: Significant downside risk detected.</span>
     </div>
   )
 }
@@ -658,31 +661,31 @@ const FEATURE_DICTIONARY = {
   },
   volatility_30d: {
     label: '30-Day Volatility',
-    tooltip: 'How erratically the stock price has moved recently. Higher volatility means more uncertainty and often higher credit risk.',
+    tooltip: 'How erratically the stock price has moved recently. In credit modeling, erratic swings elevate downside risk while steady momentum reduces default risk.',
     unit: '',
     format: (v) => v.toFixed(2),
-    context: (v) => v > 30 ? 'very volatile' : v > 15 ? 'elevated' : v > 5 ? 'normal' : 'low volatility',
+    context: (v, isRisk) => isRisk ? (v > 30 ? 'elevated volatility risk' : 'moderate price fluctuation') : (v > 30 ? 'orderly trend (low risk)' : 'low volatility (stable)'),
   },
   volatility_90d: {
     label: '90-Day Volatility',
-    tooltip: 'Longer-term price instability. Sustained high volatility suggests the market sees ongoing uncertainty around the company.',
+    tooltip: 'Longer-term price instability. In credit modeling, sustained wild swings elevate risk while orderly price expansion reflects financial strength.',
     unit: '',
     format: (v) => v.toFixed(2),
-    context: (v) => v > 30 ? 'very volatile' : v > 15 ? 'elevated' : v > 5 ? 'normal' : 'low volatility',
+    context: (v, isRisk) => isRisk ? (v > 30 ? 'elevated volatility risk' : 'moderate price fluctuation') : (v > 30 ? 'orderly price expansion' : 'stable price range'),
   },
   rsi_14d: {
     label: '14-Day RSI (Momentum)',
     tooltip: 'Relative Strength Index measures buying/selling pressure. Above 70 = overbought (potential drop), below 30 = oversold (potential bounce).',
     unit: '',
     format: (v) => v.toFixed(0),
-    context: (v) => v > 70 ? 'overbought' : v > 60 ? 'slightly overbought' : v > 40 ? 'neutral momentum' : v > 30 ? 'slightly oversold' : 'oversold',
+    context: (v, isRisk) => v > 70 ? (isRisk ? 'overbought (pullback risk)' : 'strong buying momentum') : v > 60 ? 'positive momentum' : v > 40 ? 'neutral momentum' : v > 30 ? 'slightly oversold' : 'oversold',
   },
   price_to_ma_ratio: {
     label: 'Price vs. Moving Average',
     tooltip: 'Current price relative to its 90-day moving average. Below 1.0 means the stock is trading below its trend, which can signal weakness.',
     unit: 'x',
     format: (v) => v.toFixed(3),
-    context: (v) => v > 1.1 ? 'above trend' : v > 0.95 ? 'near trend' : 'below trend',
+    context: (v, isRisk) => v > 1.1 ? (isRisk ? 'overextended vs trend' : 'trading above trend') : v > 0.95 ? 'near trend' : 'below trend',
   },
   market_sentiment_90d: {
     label: 'Market Sentiment (90-Day)',
@@ -1283,11 +1286,6 @@ export function MarketBadge({ market, exchange, flag, currency }) {
 export function Footer() {
   return (
     <div className="app-footer">
-      { }
-      <div className="disclaimer-banner">
-        <i className="fa-solid fa-triangle-exclamation"></i>
-        For informational purposes only. Not financial or credit advice.
-      </div>
       <div className="footer-copyright">© {new Date().getFullYear()} CredLens</div>
     </div>
   )
@@ -1298,7 +1296,7 @@ export function SourceAttribution({ market, agencyRating, lastUpdated }) {
   const isIndia = market === 'IN'
   const agencyName = isIndia ? 'CRISIL / ICRA' : 'S&P Global'
   const agencyUrl = isIndia
-    ? 'https://www.crisil.com/en/home/our-businesses/ratings.html'
+    ? 'https://www.crisilratings.com'
     : 'https://www.spglobal.com/ratings/'
 
   const displayUpdated = !lastUpdated || lastUpdated === 'per internal registry'

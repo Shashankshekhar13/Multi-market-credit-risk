@@ -340,7 +340,7 @@ export function Dashboard({ onOpenAuth }) {
   const ratingGrade = isInvestmentGrade ? 'Investment Grade' : (agencyRating === 'N/A' ? 'Unrated' : 'Speculative Grade')
   const ratingDeltaType = isInvestmentGrade ? 'positive' : 'negative'
   const agencyUrl = market === 'IN'
-    ? 'https://www.crisil.com/en/home/our-businesses/ratings.html'
+    ? 'https://www.crisilratings.com'
     : 'https://www.spglobal.com/ratings/'
 
   return (
@@ -505,7 +505,13 @@ export function Dashboard({ onOpenAuth }) {
                 const isStable = itemScore > 75
                 const isNeutral = itemScore > 50
                 const cardStatus = isStable ? 'stable' : isNeutral ? 'neutral' : 'volatile'
-                const statusIcon = isStable ? '✅' : isNeutral ? '⚠️' : '🚨'
+                const StatusIcon = isStable ? (
+                  <i className="fa-solid fa-circle-check"></i>
+                ) : isNeutral ? (
+                  <i className="fa-solid fa-triangle-exclamation"></i>
+                ) : (
+                  <i className="fa-solid fa-circle-exclamation"></i>
+                )
                 const itemInfo = item.company_info || {}
                 const itemSentiment = itemScoreResult?.latest_sentiment ?? 0
                 
@@ -525,7 +531,7 @@ export function Dashboard({ onOpenAuth }) {
                         <span className="score-lbl">Stability Score</span>
                       </div>
                       <div className={`status-badge-inline ${cardStatus}`}>
-                        {statusIcon} {itemScore > 75 ? 'Stable' : itemScore > 50 ? 'Neutral' : 'Volatile'}
+                        {StatusIcon} <span>{itemScore > 75 ? 'Stable' : itemScore > 50 ? 'Neutral' : 'Volatile'}</span>
                       </div>
                     </div>
 

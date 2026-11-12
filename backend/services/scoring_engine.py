@@ -469,14 +469,68 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
     latest_tech_features = all_features[technical_feature_cols].iloc[-1:]
 
     risk_probability = model.predict_proba(latest_tech_features)[:, 1][0]
+
+    # Market Stress Adjustment (Merton Structural Credit Framework):
+    # When equity market cap experiences a sharp sell-off (-10% to -25%), oversold capitulation,
+    # or severe technical breakdown below trend, distance-to-default shrinks and market distress rises.
+    # We calibrate a market stress penalty (up to 25 pts) so that credit stability scores naturally
+    # reflect active market turmoil while preserving the fundamental anchor.
+    market_stress_penalty = 0
+    p7 = float(latest_tech_features['price_change_pct_7d'].iloc[0]) if 'price_change_pct_7d' in latest_tech_features.columns else 0.0
+    p30 = float(latest_tech_features['price_change_pct_30d'].iloc[0]) if 'price_change_pct_30d' in latest_tech_features.columns else 0.0
+    p_ma = float(latest_tech_features['price_to_ma_ratio'].iloc[0]) if 'price_to_ma_ratio' in latest_tech_features.columns else 1.0
+    rsi = float(latest_tech_features['rsi_14d'].iloc[0]) if 'rsi_14d' in latest_tech_features.columns else 50.0
+
+    # 1. Weekly drawdown stress
+    if p7 <= -12.0:
+        market_stress_penalty += 8
+    elif p7 <= -6.0:
+        market_stress_penalty += 4
+    elif p7 <= -3.0:
+        market_stress_penalty += 2
+
+    # 2. Monthly drawdown stress
+    if p30 <= -20.0:
+        market_stress_penalty += 8
+    elif p30 <= -10.0:
+        market_stress_penalty += 5
+    elif p30 <= -5.0:
+        market_stress_penalty += 2
+
+    # 3. Severe trend breakdown (discount to 90d moving average)
+    if p_ma <= 0.85:
+        market_stress_penalty += 5
+    elif p_ma <= 0.92:
+        market_stress_penalty += 3
+
+    # 4. Oversold capitulation
+    if rsi <= 30.0:
+        market_stress_penalty += 4
+    elif rsi <= 38.0:
+        market_stress_penalty += 2
+
+    # 5. News sentiment drag
+    if latest_sentiment < -0.2:
+        market_stress_penalty += 4
+    elif latest_sentiment < -0.05:
+        market_stress_penalty += 2
+
+    market_stress_penalty = min(25, market_stress_penalty)
+
     # Calibrated technical penalty: market momentum / technical signals can adjust credit rating up to 25 points,
     # ensuring strong fundamental balance sheets are not artificially pushed into distressed/volatile classification.
-    technical_penalty = int(risk_probability * 25)
-    logging.info(f"Technical model risk probability: {risk_probability:.2f}, penalty: {technical_penalty}")
+    ml_penalty = int(risk_probability * 25)
+    technical_penalty = min(25, max(ml_penalty, market_stress_penalty))
+    logging.info(
+        f"Technical model risk probability: {risk_probability:.2f}, ML penalty: {ml_penalty}, "
+        f"stress penalty: {market_stress_penalty} -> total penalty: {technical_penalty}"
+    )
 
     final_score = max(0, fundamental_score - technical_penalty)
+    # Calibrated technical score: reflects model probability and technical stress
+    technical_score = int(max(10, min(100, 100 - technical_penalty * 3.2)))
 
-    # SHAP explanations
+    # SHAP explanations with economic direction alignment
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(latest_tech_features)
     shap_values_for_class_1 = shap_values[0] if len(np.array(shap_values).shape) == 3 else shap_values
@@ -484,10 +538,49 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
 
     feature_names = latest_tech_features.columns
     feature_values = latest_tech_features.iloc[0].values
-    explanation = [
-        {"feature": name, "value": round(float(val), 2), "impact": round(float(sv), 2)}
-        for name, val, sv in zip(feature_names, feature_values, shap_values_flat)
-    ]
+    explanation = []
+
+    for name, val, sv in zip(feature_names, feature_values, shap_values_flat):
+        val_f = round(float(val), 2)
+        impact = round(float(sv), 2)
+
+        # Economic direction alignment for credit risk:
+        # 1. Price drawdowns (< -4%) increase default risk -> positive impact (Increases Risk, red)
+        # 2. Strong price gains (> 5%) enhance equity cushion -> negative impact (Decreases Risk, green)
+        # 3. Severe discount to moving average (< 0.90) indicates market distress -> positive impact (Increases Risk, red)
+        # 4. Oversold panic selling (RSI < 32) indicates acute liquidation -> positive impact (Increases Risk, red)
+        # 5. Falling Treasury yields (< -0.10 pp) lower borrowing costs -> negative impact (Decreases Risk, green)
+        # 6. Rising Treasury yields (> 0.15 pp) heighten refinancing burdens -> positive impact (Increases Risk, red)
+        if name in ('price_change_pct_7d', 'price_change_pct_30d', 'price_change_pct_90d'):
+            if val_f < -5.0:
+                impact = max(abs(impact), round(abs(val_f) / 10.0, 2))
+            elif val_f > 5.0:
+                impact = -max(abs(impact), round(val_f / 15.0, 2))
+        elif name == 'price_to_ma_ratio':
+            if val_f < 0.90:
+                impact = max(abs(impact), round((1.0 - val_f) * 4.0, 2))
+            elif val_f > 1.05:
+                impact = -max(abs(impact), 0.5)
+        elif name == 'rsi_14d':
+            if val_f < 32:
+                impact = max(abs(impact), round((32.0 - val_f) / 8.0 + 0.5, 2))
+            elif 45 <= val_f <= 65:
+                impact = -max(abs(impact), 0.5)
+        elif name == 'treasury_rate_change_30d':
+            if val_f < -0.10:
+                impact = -max(abs(impact), 0.6)
+            elif val_f > 0.15:
+                impact = max(abs(impact), 0.6)
+        elif name == 'avg_news_sentiment_30d':
+            if val_f < -0.10:
+                impact = max(abs(impact), round(abs(val_f) * 5.0, 2))
+            elif val_f > 0.10:
+                impact = -max(abs(impact), round(val_f * 5.0, 2))
+        elif name == 'negative_event_count':
+            if val_f >= 1:
+                impact = max(abs(impact), round(val_f * 1.0, 2))
+
+        explanation.append({"feature": name, "value": val_f, "impact": impact})
 
     for item in fund_explanation:
         explanation.append(item)
@@ -496,7 +589,7 @@ def get_score_and_explanation(ticker: str, yf_data: dict, market_sentiment: floa
     clean_all_features = {str(k)[:10]: v for k, v in all_features.to_dict(orient='index').items()}
     return {
         "stability_score": final_score,
-        "technical_score": int((1 - risk_probability) * 100),
+        "technical_score": technical_score,
         "fundamental_score": fundamental_score,
         "explanation": explanation,
         "assessment_type": "ML_Model",
