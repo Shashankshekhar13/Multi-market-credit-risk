@@ -21,10 +21,8 @@
 
 *An institutional-grade credit risk scoring and solvency surveillance platform evaluating public equities across **US (NYSE / NASDAQ)** and **Indian (NSE / BSE)** markets in real time.*
 
-### 🚀 Live Deployments
+###  Live Deployments
 - 🌐 **Web Application (Vercel):** [https://multi-market-credit-risk.vercel.app](https://multi-market-credit-risk.vercel.app)
-- 🔌 **Production Backend API (Render):** [https://credlens-api.onrender.com](https://credlens-api.onrender.com)
-- 📖 **Interactive Swagger Docs:** [https://credlens-api.onrender.com/docs](https://credlens-api.onrender.com/docs)
 
 [Key Capabilities](#key-capabilities) • [Scoring Methodology](#hybrid-scoring-methodology) • [System Architecture](#system-architecture) • [Quickstart](#quickstart--installation) • [API Reference](#api-endpoints) • [Tech Stack](#tech-stack-breakdown)
 
