@@ -71,6 +71,7 @@ except (ImportError, Exception) as e:
 async def init_db():
     """Create all tables if they don't exist."""
     global engine, async_session, _db_available
+    from backend.models import Base
     if not _db_available or engine is None:
         logger.warning("Database unavailable. Skipping table creation.")
         return
