@@ -16,8 +16,15 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-3DA639?style=flat&logo=opensourceinitiative&logoColor=white)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-57%20Passed-2EA44F?style=flat&logo=pytest&logoColor=white)](tests/)
+[![Live App](https://img.shields.io/badge/Live%20App-Vercel%20Deployment-000000?style=flat&logo=vercel&logoColor=white)](https://multi-market-credit-risk.vercel.app)
+[![API Status](https://img.shields.io/badge/Render%20API-Active-46E3B7?style=flat&logo=render&logoColor=white)](https://credlens-api.onrender.com)
 
 *An institutional-grade credit risk scoring and solvency surveillance platform evaluating public equities across **US (NYSE / NASDAQ)** and **Indian (NSE / BSE)** markets in real time.*
+
+### 🚀 Live Deployments
+- 🌐 **Web Application (Vercel):** [https://multi-market-credit-risk.vercel.app](https://multi-market-credit-risk.vercel.app)
+- 🔌 **Production Backend API (Render):** [https://credlens-api.onrender.com](https://credlens-api.onrender.com)
+- 📖 **Interactive Swagger Docs:** [https://credlens-api.onrender.com/docs](https://credlens-api.onrender.com/docs)
 
 [Key Capabilities](#key-capabilities) • [Scoring Methodology](#hybrid-scoring-methodology) • [System Architecture](#system-architecture) • [Quickstart](#quickstart--installation) • [API Reference](#api-endpoints) • [Tech Stack](#tech-stack-breakdown)
 
@@ -32,8 +39,8 @@ Traditional credit rating agencies (S&P, Moody's, Fitch, CRISIL, ICRA) publish s
 **CredLens** bridges this gap. It combines **balance-sheet solvency fundamentals** with **structural credit models (Merton / KMV distance-to-default framework)**, **XGBoost machine learning**, **macroeconomic yield curves (FRED)**, and **real-time NLP news sentiment** to deliver an adaptive, continuous **CredLens Stability Score (0–100)** with fully transparent **SHAP explainability**.
 
 <div align="center">
-  <img src="assets/images/dashboard.png" alt="CredLens Real-time Analysis Scorecard & Key Drivers" width="95%" />
-  <p><em>Live Credit Scorecard, Sector Peer Benchmarking, Calibrated SHAP Key Drivers & Historical Performance</em></p>
+  <img src="assets/images/dashboard.png" alt="CredLens Real-time Analysis Scorecard for Reliance Industries Limited" width="95%" />
+  <p><em>Live Credit Scorecard, Sector Peer Benchmarking, Calibrated Stability Score (91 / CRISIL AAA)</em></p>
 </div>
 
 ---
@@ -68,6 +75,11 @@ Traditional credit rating agencies (S&P, Moody's, Fitch, CRISIL, ICRA) publish s
 ---
 
 ## Platform Interface
+
+| Live Analysis Scorecard & Benchmarking | Calibrated Key Drivers & 1-Year Performance |
+|:---:|:---:|
+| <img src="assets/images/dashboard.png" width="100%" alt="CredLens Real-time Analysis Scorecard" /> | <img src="assets/images/key_drivers.png" width="100%" alt="Calibrated SHAP Key Drivers & Historical Stock Performance" /> |
+| *Real-time credit scorecard, CRISIL/S&P rating & peer comparison* | *Economic SHAP attribution drivers with 1-year historical price chart* |
 
 | Dual-Market Landing & Catalog | Score History & NLP News Surveillance |
 |:---:|:---:|
