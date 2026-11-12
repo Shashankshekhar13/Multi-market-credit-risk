@@ -13,7 +13,7 @@ const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL?.replace('/api/v1/score', '') ||
   (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8000'
-    : 'https://credit-risk-hackathon-production.up.railway.app')
+    : 'https://credlens-api.onrender.com')
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -372,10 +372,11 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
 
       {/* Analysis Mode Toggle (Priority 3, Item 12) */}
       <div className="sidebar-label">Analysis Mode</div>
-      <div className="market-toggle" style={{ marginBottom: '1rem' }}>
+      <div className="market-toggle" style={{ marginBottom: '1rem', minHeight: '42px', height: '42px', flexShrink: 0 }}>
         <button
           type="button"
           className={`market-toggle-btn ${mode === 'single' ? 'active' : ''}`}
+          style={{ minHeight: '34px', height: '34px', flexShrink: 0 }}
           onClick={() => { setMode('single'); setValidationError(null); setTicker('') }}
           disabled={isLoading}
         >
@@ -384,6 +385,7 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
         <button
           type="button"
           className={`market-toggle-btn ${mode === 'compare' ? 'active' : ''}`}
+          style={{ minHeight: '34px', height: '34px', flexShrink: 0 }}
           onClick={() => { setMode('compare'); setValidationError(null); setTicker('') }}
           disabled={isLoading}
         >
@@ -393,10 +395,11 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
 
       {/* Market Toggle */}
       <div className="sidebar-label">Select Market</div>
-      <div className="market-toggle">
+      <div className="market-toggle" style={{ minHeight: '42px', height: '42px', flexShrink: 0 }}>
         <button
           type="button"
           className={`market-toggle-btn ${market === 'US' ? 'active' : ''}`}
+          style={{ minHeight: '34px', height: '34px', flexShrink: 0 }}
           onClick={() => handleMarketSwitch('US')}
           disabled={isLoading}
         >
@@ -405,6 +408,7 @@ export function Sidebar({ onAnalyze, isLoading, mode, setMode, onOpenAuth }) {
         <button
           type="button"
           className={`market-toggle-btn ${market === 'IN' ? 'active' : ''}`}
+          style={{ minHeight: '34px', height: '34px', flexShrink: 0 }}
           onClick={() => handleMarketSwitch('IN')}
           disabled={isLoading}
         >

@@ -18,7 +18,7 @@ const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL ||
   (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8000/api/v1/score'
-    : 'https://credit-risk-hackathon-production.up.railway.app/api/v1/score')
+    : 'https://credlens-api.onrender.com/api/v1/score')
 
 // -------------------------
 // Helpers
