@@ -9,6 +9,11 @@ from sqlalchemy.orm import DeclarativeBase, relationship
 from datetime import datetime, timezone
 
 
+def utcnow_naive():
+    """Return naive UTC datetime for seamless compatibility with TIMESTAMP WITHOUT TIME ZONE in PostgreSQL/asyncpg and SQLite."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 class Base(DeclarativeBase):
     """Base class for all ORM models."""
     pass
@@ -28,8 +33,8 @@ class Company(Base):
     industry = Column(String(100), nullable=True)
     market_cap = Column(Float, nullable=True)
     info_json = Column(JSON, nullable=True)  # Full yfinance info blob
-    last_updated = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    last_updated = Column(DateTime, default=utcnow_naive)
+    created_at = Column(DateTime, default=utcnow_naive)
 
     # Relationships
     price_history = relationship("PriceHistory", back_populates="company", cascade="all, delete-orphan")
@@ -71,7 +76,7 @@ class Score(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     ticker = Column(String(20), ForeignKey("companies.ticker", ondelete="CASCADE"), nullable=False)
-    date = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    date = Column(DateTime, nullable=False, default=utcnow_naive)
     stability_score = Column(Float, nullable=True)
     fundamental_score = Column(Float, nullable=True)
     technical_score = Column(Float, nullable=True)
@@ -101,7 +106,7 @@ class NewsArticle(Base):
     published_at = Column(DateTime, nullable=True)
     sentiment_score = Column(Float, nullable=True)
     content = Column(Text, nullable=True)
-    fetched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    fetched_at = Column(DateTime, default=utcnow_naive)
 
     __table_args__ = (
         Index("ix_news_ticker_published", "ticker", "published_at"),
@@ -163,7 +168,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=utcnow_naive)
 
     watchlist = relationship("UserWatchlist", back_populates="user", cascade="all, delete-orphan")
     alert_preferences = relationship("UserAlertPreference", back_populates="user", cascade="all, delete-orphan")
@@ -179,7 +184,7 @@ class UserWatchlist(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     ticker = Column(String(20), nullable=False)
-    added_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    added_at = Column(DateTime, default=utcnow_naive)
 
     __table_args__ = (
         UniqueConstraint("user_id", "ticker", name="uq_watchlist_user_ticker"),
@@ -199,7 +204,7 @@ class UserAlertPreference(Base):
     threshold = Column(Float, nullable=True)
     channel = Column(String(20), nullable=False, default="email")  # email, sms, in_app
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=utcnow_naive)
 
     user = relationship("User", back_populates="alert_preferences")
 
@@ -215,4 +220,4 @@ class Notification(Base):
     message = Column(Text, nullable=False)
     channel = Column(String(20), nullable=False, default="in_app")
     read = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=utcnow_naive)

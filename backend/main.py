@@ -49,16 +49,29 @@ app = FastAPI(
 
 import os
 
-allowed_origins_env = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173,https://credit-risk-hackathon-production.up.railway.app"
-)
-allowed_origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
-is_wildcard = "*" in allowed_origins
+default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://multi-market-credit-risk.vercel.app",
+    "https://credlens-api.onrender.com",
+    "https://credit-risk-hackathon-production.up.railway.app",
+]
+
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_env:
+    for origin in allowed_origins_env.split(","):
+        clean_origin = origin.strip()
+        if clean_origin and clean_origin not in default_origins:
+            default_origins.append(clean_origin)
+
+is_wildcard = "*" in default_origins
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"] if is_wildcard else default_origins,
+    allow_origin_regex=None if is_wildcard else r"https://.*\.vercel\.app",
     allow_credentials=not is_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],

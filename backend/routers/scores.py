@@ -85,7 +85,7 @@ async def _persist_score(ticker: str, market_info: dict,
                 existing.sector = company_info.get("sector")
                 existing.industry = company_info.get("industry")
                 existing.info_json = company_info
-                existing.last_updated = datetime.now(timezone.utc)
+                existing.last_updated = datetime.now(timezone.utc).replace(tzinfo=None)
             else:
                 company = Company(
                     ticker=ticker.upper(),
