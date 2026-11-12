@@ -32,7 +32,8 @@ Traditional credit rating agencies (S&P, Moody's, Fitch, CRISIL, ICRA) publish s
 **CredLens** bridges this gap. It combines **balance-sheet solvency fundamentals** with **structural credit models (Merton / KMV distance-to-default framework)**, **XGBoost machine learning**, **macroeconomic yield curves (FRED)**, and **real-time NLP news sentiment** to deliver an adaptive, continuous **CredLens Stability Score (0–100)** with fully transparent **SHAP explainability**.
 
 <div align="center">
-  <img src="assets/images/dashboard.png" alt="CredLens Dashboard Preview" width="85%" />
+  <img src="assets/images/dashboard.png" alt="CredLens Real-time Analysis Scorecard & Key Drivers" width="95%" />
+  <p><em>Live Credit Scorecard, Sector Peer Benchmarking, Calibrated SHAP Key Drivers & Historical Performance</em></p>
 </div>
 
 ---
@@ -63,6 +64,15 @@ Traditional credit rating agencies (S&P, Moody's, Fitch, CRISIL, ICRA) publish s
 
 - **Surveillance & Proactive Alert Engine:**
   - Configurable alerts notifying users of score drops, transitions into volatile territory, negative news spikes, or credit recovery events.
+
+---
+
+## Platform Interface
+
+| Dual-Market Landing & Catalog | Score History & NLP News Surveillance |
+|:---:|:---:|
+| <img src="assets/images/landing.png" width="100%" alt="Dual-Market Landing and Catalog Interface" /> | <img src="assets/images/score_history.png" width="100%" alt="Historical Score Tracking and NLP News Headlines" /> |
+| *US & Indian market switcher with quick-picks & catalog selection* | *Historical stability score trajectory with live negative-event news feed* |
 
 ---
 
