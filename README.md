@@ -22,7 +22,7 @@
 *An institutional-grade credit risk scoring and solvency surveillance platform evaluating public equities across **US (NYSE / NASDAQ)** and **Indian (NSE / BSE)** markets in real time.*
 
 ###  Live Deployments
-- 🌐 **Web Application (Vercel):** [https://multi-market-credit-risk.vercel.app](https://multi-market-credit-risk.vercel.app)
+ 🌐 **Web Application:** [https://multi-market-credit-risk.vercel.app](https://multi-market-credit-risk.vercel.app)
 
 [Key Capabilities](#key-capabilities) • [Scoring Methodology](#hybrid-scoring-methodology) • [System Architecture](#system-architecture) • [Quickstart](#quickstart--installation) • [API Reference](#api-endpoints) • [Tech Stack](#tech-stack-breakdown)
 
