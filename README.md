@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.svg" alt="CredLens Logo" width="100" height="100" />
+<img src="assets/logo.png" alt="CredLens Logo" width="80" />
 
 # CredLens
 ### Institutional Multi-Market Credit Risk & Solvency Intelligence Platform
