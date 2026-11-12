@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.svg" alt="CredLens Logo" width="100" height="100" />
+
 # CredLens
 ### Institutional Multi-Market Credit Risk & Solvency Intelligence Platform
 
@@ -28,6 +30,10 @@
 Traditional credit rating agencies (S&P, Moody's, Fitch, CRISIL, ICRA) publish static ratings that often lag abrupt market downturns, liquidity crunches, and rapid macroeconomic shifts by months. 
 
 **CredLens** bridges this gap. It combines **balance-sheet solvency fundamentals** with **structural credit models (Merton / KMV distance-to-default framework)**, **XGBoost machine learning**, **macroeconomic yield curves (FRED)**, and **real-time NLP news sentiment** to deliver an adaptive, continuous **CredLens Stability Score (0–100)** with fully transparent **SHAP explainability**.
+
+<div align="center">
+  <img src="assets/images/dashboard.png" alt="CredLens Dashboard Preview" width="85%" />
+</div>
 
 ---
 

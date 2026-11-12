@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" fill="none">
+  <defs>
+    <linearGradient id="cl-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00897B" />
+      <stop offset="50%" stop-color="#00C4CC" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+    <linearGradient id="cl-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="cl-glow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00C4CC" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#01579B" stop-opacity="0" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background container with subtle border -->
+  <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#cl-bg)" stroke="#1e293b" stroke-width="2"/>
+  
+  <!-- Concentric surveillance lens radar grid -->
+  <circle cx="60" cy="60" r="42" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="4 4" />
+  <circle cx="60" cy="60" r="26" stroke="#1e293b" stroke-width="1" />
+  <line x1="60" y1="18" x2="60" y2="102" stroke="#1e293b" stroke-width="1" stroke-dasharray="2 4" />
+  <line x1="18" y1="60" x2="102" y2="60" stroke="#1e293b" stroke-width="1" stroke-dasharray="2 4" />
+
+  <!-- Dynamic Area fill under the trend line -->
+  <path d="M 28 82 L 46 64 L 62 72 L 86 38 L 86 86 L 28 86 Z" fill="url(#cl-glow)" />
+
+  <!-- Upward Trend Line (CredLens Arrow Trend) -->
+  <path d="M 28 82 L 46 64 L 62 72 L 88 38" 
+        stroke="url(#cl-gradient)" 
+        stroke-width="5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+
+  <!-- Arrowhead -->
+  <path d="M 72 38 L 88 38 L 88 54" 
+        stroke="url(#cl-gradient)" 
+        stroke-width="5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+
+  <!-- Data point nodes -->
+  <circle cx="46" cy="64" r="3.5" fill="#00C4CC" />
+  <circle cx="62" cy="72" r="3.5" fill="#00C4CC" />
+  <circle cx="88" cy="38" r="4.5" fill="#38BDF8" />
+</svg>
